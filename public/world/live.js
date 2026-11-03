@@ -51,7 +51,7 @@
       w: ev.filter(e => e.st === 'seen').length, menu: (r.shop_menu || []).map(m => m.menu), p: strs(r.price_text, 20), land: strs(r.landmark, 30),
       photo: L.photos ? (photos[0] || null) : null, rev: (r.reviews || []).map(v => ({ rating: +v.rating, body: strs(v.body, 80), nick: strs(v.nick, 10), uid: v.user_id, t: Date.parse(v.created_at) })), user: false
     };
-    k.addr = addrText(k.x, k.z); k.ll = llOf(k.x, k.z);
+    k.lat = r.lat == null ? null : +r.lat; k.lng = r.lng == null ? null : +r.lng; k.addr = null; k.ll = llOf(k.x, k.z);
     return k;
   }
   L.load = async function (a) {
@@ -178,14 +178,17 @@
   window.persist = function () { if (!L.on) return _persist() };
   const _save = window.save;
   window.save = function () {
-    const r = reg; _save();
+    const r = reg;
+    if (L.on && r && !r.real) { pickReal(r, () => window.save()); return } // 실제 지도에서 위치를 먼저 찍어요
+    _save();
     if (!(L.on && r)) return;
     const s = spots[spots.length - 1]; if (!s || s.id) return;
+    if (r.real) { s.lat = r.real.lat; s.lng = r.real.lng } s.addr = null;
     createShop(s, r);
   };
   async function createShop(s, r) {
     try {
-      const ins = await sb.from('shops').insert({ area: L.area, name: s.n, world_x: s.x, world_z: s.z, landmark: s.land || null, price_text: s.p || null }).select('id').single();
+      const ins = await sb.from('shops').insert({ area: L.area, name: s.n, world_x: s.x, world_z: s.z, landmark: s.land || null, price_text: s.p || null, lat: r.real ? r.real.lat : null, lng: r.real ? r.real.lng : null }).select('id').single();
       if (ins.error) throw ins.error;
       s.id = ins.data.id;
       if (s.menu && s.menu.length) await sb.from('shop_menu').insert(s.menu.map(m => ({ shop_id: s.id, menu: m })));
@@ -212,7 +215,7 @@
       `<div class="g"><button class="b" data-x="rev" data-i="${i}">✍️ 리뷰 남기기</button>${r.length > 3 ? `<button class="b" data-x="revall" data-i="${i}">전체 ${r.length}개</button>` : ''}</div></div>`;
   }
   const _show = window.show;
-  window.show = function (s) { _show(s); const b = $('bub'); if (b && b.style.display !== 'none') b.insertAdjacentHTML('beforeend', revHTML(s, spots.indexOf(s))) };
+  window.show = function (s) { _show(s); const b = $('bub'); if (b && b.style.display !== 'none') b.insertAdjacentHTML('beforeend', (s.lat != null ? `<button class="b" style="width:100%;margin-top:8px" data-x="realgo" data-i="${spots.indexOf(s)}">🌏 실제 지도에서 보기</button>` : '') + revHTML(s, spots.indexOf(s))) };
   function revForm(i, rating, body) {
     const s = spots[i], mine = getRev(s).find(v => v.mine || (uid && v.uid === uid)); rating = rating || (mine && mine.rating) || 5; body = body != null ? body : (mine && mine.body) || '';
     bub(`<div style="display:flex;justify-content:space-between"><b>😋 ${esc(s.n)} 리뷰</b><button class="b" data-x="close" aria-label="닫기">✕</button></div><small>맛있었다면 다른 고양이들이 참고할 수 있게 남겨주세요. 한 가게에 하나만 남길 수 있고, 다시 쓰면 바뀌어요.</small>
@@ -240,6 +243,7 @@
     else if (x === 'rsave') revSave(i, +b.dataset.v);
     else if (x === 'revall') revAll(i);
     else if (x === 'rback') show(spots[i]);
+    else if (x === 'realgo') { const s = spots[i]; if (s && s.lat != null) openReal(s) }
   });
   // 줄에서 나왔을 때 "맛있었나요?" 안내 (45초 이상 기다렸을 때만)
   const chip = document.createElement('div');
@@ -252,5 +256,150 @@
     const o = inQ, waited = o ? Date.now() - (qt || L.qt || Date.now()) : 0; _lq(q);
     if (o && !inQ && waited > 45000) { chip.s = o; chip.textContent = '😋 ' + o.n + ' 맛있었나요? 리뷰를 남겨주세요 →'; chip.style.display = 'block'; clearTimeout(chip.k); chip.k = setTimeout(() => chip.style.display = 'none', 12000) }
   };
+  /* ---------- 9. 실제 지도 (OpenStreetMap + Leaflet) ----------
+   * 가게를 등록할 때 실제 지도에서 핀을 찍어 진짜 좌표(lat,lng)를 저장하고,
+   * 🌏 실제 지도에서는 보이는 화면 안의 가게를 실제 위치 기준으로 찾아요.
+   * 내 GPS는 이 폰 안에서만 쓰이고 서버로 보내지 않아요(가게 좌표만 저장). */
+  const LFV = '1.9.4', LF = () => window.L, KR = [37.5665, 126.9780];
+  let lfP = null;
+  function loadLeaflet() {
+    if (window.L && window.L.map) return Promise.resolve();
+    if (lfP) return lfP;
+    lfP = new Promise((ok, no) => {
+      const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/' + LFV + '/leaflet.min.css'; document.head.appendChild(css);
+      const js = document.createElement('script'); js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/' + LFV + '/leaflet.min.js'; js.onload = ok; js.onerror = () => { lfP = null; no(new Error('leaflet')) }; document.head.appendChild(js);
+    });
+    return lfP;
+  }
+  const st9 = document.createElement('style');
+  st9.textContent = `#rmap,#rpick{position:fixed;inset:0;z-index:30;background:var(--bg);color:var(--ink);display:none;flex-direction:column}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.rh span{display:flex;gap:6px}.rc{padding:10px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:42%;overflow:auto;font-size:14px;background:var(--bg)}
+.rm-pin{font-size:20px;background:#fff;border:2px solid #D98A2B;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px #0004}.rm-pin.old{opacity:.55}
+.mapwrap{position:relative;flex:1;min-height:200px}.mapwrap>div:first-child{position:absolute;inset:0}
+.pkpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:34px;z-index:1000;pointer-events:none;filter:drop-shadow(0 2px 2px #0006)}
+.rlink{display:inline-block;text-decoration:none;text-align:center;flex:1}#rpick input{margin:0;flex:1}`;
+  document.head.appendChild(st9);
+  const mk = html => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild };
+  const tiles = lf => lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+  async function geocode(q) {
+    try {
+      const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=kr&accept-language=ko&q=' + encodeURIComponent(q));
+      const j = await r.json(); if (j && j[0]) return [+j[0].lat, +j[0].lon];
+    } catch (e) { }
+    return null;
+  }
+  async function startCenter() {
+    try { const g = JSON.parse(localStorage.getItem('bz_ll') || 'null'); if (g && g.lat) return [g.lat, g.lng] } catch (e) { }
+    const a = String(L.area || (typeof area === 'string' ? area : '') || ''), m = /\((-?[\d.]+),\s*(-?[\d.]+)\)/.exec(a);
+    if (m) return [+m[1], +m[2]];
+    return (a && await geocode(a)) || KR;
+  }
+  const dist = (a, b) => { const R = 6371000, r = Math.PI / 180, dy = (b[0] - a[0]) * r, dx = (b[1] - a[1]) * r * Math.cos((a[0] + b[0]) / 2 * r); return Math.round(Math.hypot(dx, dy) * R) };
+
+  // --- 보기: 🌏 실제 지도 ---
+  let rm = null, rmLayer = null, rmMe = null, rmMeLL = null, rmTimer = null, rmTok = 0, rmSel = null;
+  function ensureRM() {
+    let el = $('rmap'); if (el) return el;
+    el = mk(`<div id="rmap" role="dialog" aria-label="실제 지도"><div class="rh"><b>🌏 실제 지도 · 내 주변 붕어빵</b><span><button class="b" id="rme" aria-label="내 위치로">📍 내 위치</button><button class="b" id="rx" aria-label="닫기">✕</button></span></div><div class="mapwrap"><div id="rmm"></div></div><div class="rc" id="rmc"></div></div>`);
+    document.body.appendChild(el);
+    ['rmap'].forEach(() => el.addEventListener('keydown', e => e.stopPropagation()));
+    $('rx').onclick = () => { el.style.display = 'none' };
+    $('rme').onclick = () => {
+      if (!navigator.geolocation) return;
+      $('rmc').innerHTML = '<small>위치를 확인하는 중…</small>';
+      navigator.geolocation.getCurrentPosition(p => {
+        rmMeLL = [p.coords.latitude, p.coords.longitude]; if (rmMe) rmMe.remove();
+        rmMe = LF().circleMarker(rmMeLL, { radius: 8, color: '#fff', weight: 3, fillColor: '#2f7bff', fillOpacity: 1 }).addTo(rm); rm.setView(rmMeLL, 16);
+      }, e => { $('rmc').innerHTML = '<b>📍 위치를 쓸 수 없어요</b><br><small>' + esc(geoMsg(e)) + '</small>' }, { timeout: 15000, maximumAge: 60000 });
+    };
+    return el;
+  }
+  async function openReal(focus) {
+    const el = ensureRM(); el.style.display = 'flex'; $('rmc').innerHTML = '<small>지도를 불러오는 중…</small>';
+    try { await loadLeaflet() } catch (e) { $('rmc').innerHTML = '<b>지도를 불러오지 못했어요</b><br><small>인터넷 연결을 확인해 주세요.</small>'; return }
+    const lf = LF(), c = focus && focus.lat != null ? [focus.lat, focus.lng] : await startCenter();
+    if (!rm) {
+      rm = lf.map('rmm'); tiles(lf).addTo(rm); rmLayer = lf.layerGroup().addTo(rm);
+      rm.on('moveend', () => { clearTimeout(rmTimer); rmTimer = setTimeout(fetchBox, 350) });
+    }
+    rmSel = focus && focus.lat != null ? focus : null;
+    rm.setView(c, 16); setTimeout(() => { rm.invalidateSize(); fetchBox() }, 60);
+  }
+  async function fetchBox() {
+    if (!rm || $('rmap').style.display === 'none') return;
+    if (rm.getZoom() < 12) { $('rmc').innerHTML = '<small>조금 더 확대하면 가게가 보여요.</small>'; return }
+    const tok = ++rmTok, b = rm.getBounds();
+    const { data, error } = await sb.from('shops').select('*,shop_menu(menu)').not('lat', 'is', null)
+      .gte('lat', b.getSouth()).lte('lat', b.getNorth()).gte('lng', b.getWest()).lte('lng', b.getEast()).limit(150);
+    if (tok !== rmTok) return;
+    if (error) { $('rmc').innerHTML = '<small>가게를 못 불러왔어요 [' + esc(strs(error.message, 60)) + ']</small>'; return }
+    const ids = data.map(d => d.id); let sg = [];
+    if (ids.length) { const q = await sb.from('sightings').select('shop_id,status,user_id,created_at').in('shop_id', ids).gte('created_at', new Date(Date.now() - 7 * 864e5).toISOString()); if (!q.error) sg = q.data }
+    if (tok !== rmTok) return;
+    rmLayer.clearLayers();
+    const list = data.map(r => mkSpot(r, sg.filter(x => x.shop_id === r.id)));
+    list.forEach(s => {
+      const f = stat(s);
+      LF().marker([s.lat, s.lng], { icon: LF().divIcon({ className: '', html: '<div class="rm-pin' + (f.old ? ' old' : '') + '">' + f.e + '</div>', iconSize: [34, 34], iconAnchor: [17, 17] }) })
+        .addTo(rmLayer).on('click', () => { rmSel = s; rmCard(s) });
+    });
+    if (rmSel) { const s = list.find(x => x.id === rmSel.id); if (s) return rmCard(s) }
+    $('rmc').innerHTML = list.length ? '<small>이 화면에 붕어빵 ' + list.length + '곳이 있어요. 이모티콘을 눌러보세요.</small>' : '<small>이 근처엔 아직 등록된 붕어빵이 없어요. 지도를 움직여 보거나, 월드에서 첫 발견자가 되어 보세요 🐟</small>';
+  }
+  function rmCard(s) {
+    const f = stat(s), info = (s.menu || []).map(m => (MI[m] || '🥞') + ' ' + m).join(' · ') + (s.p ? ((s.menu && s.menu.length) ? ' · ' : '') + '💰 ' + esc(s.p) : '');
+    const d = rmMeLL ? ' · 내 위치에서 약 ' + dist(rmMeLL, [s.lat, s.lng]) + 'm' : '', nm = encodeURIComponent(s.n);
+    $('rmc').innerHTML = `<b>${f.e} ${esc(s.n)}</b><div style="margin-top:4px">${f.k === 'absent' ? '🌙 지금은 없을 수도 있어요' : ago(f.lastT || s.t) + ' 목격'}${f.conf ? ' · 👥 ' + f.conf + '명 확인' : ''}</div>`
+      + (s.land && s.land !== s.n ? `<div style="margin-top:4px">📍 ${esc(s.land)}</div>` : '')
+      + `<div style="margin-top:4px">${info || '<span style="opacity:.7">메뉴/가격 정보가 아직 없어요</span>'}</div><small>${esc(d.replace(/^ · /, ''))}</small>`
+      + `<div class="g"><a class="b p rlink" target="_blank" rel="noopener" href="https://map.kakao.com/link/to/${nm},${s.lat},${s.lng}">🧭 카카오맵 길찾기</a><a class="b rlink" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">구글지도</a></div>`;
+  }
+
+  // --- 등록: 실제 지도에서 핀 찍기 (가운데 핀 고정, 지도를 움직여 맞추기) ---
+  let pk = null, pkR = null, pkDone = null;
+  function ensurePK() {
+    let el = $('rpick'); if (el) return el;
+    el = mk(`<div id="rpick" role="dialog" aria-label="가게 위치 찍기"><div class="rh"><b>📍 실제 가게 위치를 찍어주세요</b><button class="b" id="pkx" aria-label="닫기">✕</button></div>
+<div style="display:flex;gap:6px;padding:0 12px 8px"><input id="pks" maxlength="40" placeholder="장소 검색 (예: 부천역 1번 출구)" aria-label="장소 검색"><button class="b" id="pkg">🔍</button></div>
+<div class="mapwrap"><div id="pkm"></div><div class="pkpin">📍</div></div>
+<div class="rc" id="pkc"><small>지도를 움직여서 📍 핀 끝을 붕어빵 가게 위치에 맞춰주세요.</small><div class="g"><button class="b" id="pkme">📍 내 위치로</button><button class="b p" id="pkok">여기로 등록</button></div></div></div>`);
+    document.body.appendChild(el);
+    el.addEventListener('keydown', e => e.stopPropagation());
+    $('pkx').onclick = () => { el.style.display = 'none' };
+    $('pkg').onclick = async () => {
+      const q = $('pks').value.trim(); if (!q) return;
+      const c = await geocode(q); if (c) pk.setView(c, 17); else $('pkc').firstChild.textContent = '장소를 못 찾았어요. 다른 말로 검색하거나 지도를 직접 움직여 주세요.';
+    };
+    $('pks').addEventListener('keydown', e => { if (e.key === 'Enter') $('pkg').click() });
+    $('pkme').onclick = () => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(p => pk.setView([p.coords.latitude, p.coords.longitude], 18), e => { $('pkc').firstChild.textContent = geoMsg(e) }, { timeout: 15000, maximumAge: 60000 });
+    };
+    $('pkok').onclick = () => {
+      if (!pk || !pkR) return; const c = pk.getCenter();
+      pkR.real = { lat: +c.lat.toFixed(6), lng: +c.lng.toFixed(6) };
+      el.style.display = 'none'; const f = pkDone; pkDone = null; if (f) f();
+    };
+    return el;
+  }
+  function pickReal(r, done) {
+    const el = ensurePK(); el.style.display = 'flex'; pkR = r; pkDone = done;
+    loadLeaflet().then(async () => {
+      const lf = LF();
+      if (!pk) { pk = lf.map('pkm'); tiles(lf).addTo(pk) }
+      const c = r.real ? [r.real.lat, r.real.lng] : await startCenter();
+      pk.setView(c, 17); setTimeout(() => pk.invalidateSize(), 60);
+    }).catch(() => { $('pkc').firstChild.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.' });
+  }
+
+  // 진입 버튼(🌏)과 가게 카드의 "실제 지도에서 보기"
+  L.initP.then(() => {
+    if (!L.on || !$('mapb') || $('rmapb')) return;
+    $('mapb').insertAdjacentHTML('afterend', '<button class="glass" id="rmapb" aria-label="실제 지도 열기" style="border:0">🌏</button>');
+    $('rmapb').onclick = () => openReal();
+  });
+  L.openReal = openReal;
+
   L.leave = leave;
 })();
