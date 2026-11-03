@@ -199,7 +199,8 @@
         if (!up.error) { const url = sb.storage.from('shop-photos').getPublicUrl(path).data.publicUrl; await sb.from('shop_photos').insert({ shop_id: s.id, url }); s.photo = url } else console.warn('[bungzone] photo', up.error.message);
       }
     } catch (e) {
-      fail(/duplicate_shop/.test(e.message || '') ? '이 근처엔 이미 붕어빵이 있어요' : '새 가게가 서버에 저장되지 않았어요', e);
+      try { closeBub() } catch (x) { }
+      fail(/duplicate_shop/.test(e.message || '') ? '같은 자리(13m 안)에 이미 등록된 붕어빵이 있어요' : /too_many/.test(e.message || '') ? '하루에 5곳까지만 등록할 수 있어요' : '새 가게가 서버에 저장되지 않았어요', e);
       try { world.remove(s.g); (s.npc || []).forEach(n => world.remove(n)) } catch (x) { } const i = spots.indexOf(s); if (i >= 0) spots.splice(i, 1);
     }
   }
@@ -417,7 +418,7 @@
     const g = a ? await geocode(a) : null; L.anchorFor = a; L.anchor = g; return g;
   }
   const toWorld = (an, lat, lng) => {
-    const c = v => Math.max(-240, Math.min(240, Math.round(v * 10) / 10));
+    const k = .4, c = v => Math.max(-240, Math.min(240, Math.round(v * k * 10) / 10));
     return { x: c((lng - an[1]) * 111000 * Math.cos(an[0] * Math.PI / 180)), z: c(-(lat - an[0]) * 111000) };
   };
   function startReal() {
@@ -443,7 +444,6 @@
     $('mapb').insertAdjacentHTML('afterend', '<button class="glass" id="rmapb" aria-label="실제 지도 열기" style="border:0">🌏</button>');
     $('rmapb').onclick = () => openReal();
     $('b4').onclick = startReal; // 가게 등록은 지금 있는 곳 기준
-    if ($('enter') && !$('rfirst')) { $('enter').insertAdjacentHTML('afterend', '<button class="btn s" id="rfirst" style="width:100%;margin-top:10px">🌏 지도로 근처 붕어빵 찾기</button>'); $('rfirst').onclick = () => openReal() }
   });
   L.openReal = openReal;
 
