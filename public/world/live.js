@@ -4,6 +4,7 @@
 (function () {
   'use strict';
   const L = window.LIVE;
+  L.photos = false; // 사진 기능: 신고/관리 기능이 생기기 전까지 꺼둠
   const SCHEMA_HINT = '서버 설정을 확인해 주세요';
   let sb = null, ch = null, uid = null, peers = [], meshes = {}, sid = null, lastTrack = '', lastMv = '', lastChat = 0, qt = 0, lastQ = null;
   try { sid = sessionStorage.getItem('bz_sid') || (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); sessionStorage.setItem('bz_sid', sid) } catch (e) { sid = String(Math.random()).slice(2) }
@@ -48,7 +49,7 @@
     const k = {
       id: r.id, n: strs(r.name, 40), x: +r.world_x, z: +r.world_z, t: Date.parse(r.created_at), ev, q: 0,
       w: ev.filter(e => e.st === 'seen').length, menu: (r.shop_menu || []).map(m => m.menu), p: strs(r.price_text, 20), land: strs(r.landmark, 30),
-      photo: photos[0] || null, rev: (r.reviews || []).map(v => ({ rating: +v.rating, body: strs(v.body, 80), nick: strs(v.nick, 10), uid: v.user_id, t: Date.parse(v.created_at) })), user: false
+      photo: L.photos ? (photos[0] || null) : null, rev: (r.reviews || []).map(v => ({ rating: +v.rating, body: strs(v.body, 80), nick: strs(v.nick, 10), uid: v.user_id, t: Date.parse(v.created_at) })), user: false
     };
     k.addr = addrText(k.x, k.z); k.ll = llOf(k.x, k.z);
     return k;
@@ -189,7 +190,7 @@
       s.id = ins.data.id;
       if (s.menu && s.menu.length) await sb.from('shop_menu').insert(s.menu.map(m => ({ shop_id: s.id, menu: m })));
       await sb.from('sightings').insert({ shop_id: s.id, status: 'seen' });
-      if (r.photo && /^data:image\//.test(r.photo)) {
+      if (L.photos && r.photo && /^data:image\//.test(r.photo)) {
         const blob = await (await fetch(r.photo)).blob(), path = uid + '/' + s.id + '-' + Date.now() + '.jpg';
         const up = await sb.storage.from('shop-photos').upload(path, blob, { contentType: 'image/jpeg' });
         if (!up.error) { const url = sb.storage.from('shop-photos').getPublicUrl(path).data.publicUrl; await sb.from('shop_photos').insert({ shop_id: s.id, url }); s.photo = url } else console.warn('[bungzone] photo', up.error.message);
