@@ -391,13 +391,13 @@ if(isAnd){
  if(/KAKAOTALK/i.test(ua)){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url)}
  else{location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end'}
 }
+function rm(){var d=document.getElementById('inappbar');if(d)d.remove()}
 function watch(){
- var a=document.getElementById('ask');if(!a)return;
- new MutationObserver(function(){
-  if(a.style.display==='flex')bar();
-  else{var d=document.getElementById('inappbar');if(d)d.remove()}
- }).observe(a,{attributes:true,attributeFilter:['style']});
- if(a.style.display==='flex')bar();
+ var a=document.getElementById('ask'),l=document.getElementById('loc');
+ if(a)new MutationObserver(function(){if(a.style.display==='flex')bar();else rm()}).observe(a,{attributes:true,attributeFilter:['style']});
+ if(l)new MutationObserver(function(){if(l.style.display!=='flex')rm()}).observe(l,{attributes:true,attributeFilter:['style']});
+ ['askgo','gps'].forEach(function(id){var b=document.getElementById(id);if(b)b.addEventListener('click',bar,true)});
+ if(a&&a.style.display==='flex')bar();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);else watch();
 })();
