@@ -68,6 +68,11 @@
       }
       data.forEach(r => { const k = mkSpot(r, sg.filter(x => x.shop_id === r.id)); spots.push(k); stall(k) });
     } catch (e) { fail('가게 목록을 못 불러왔어요. ' + SCHEMA_HINT, e) }
+    // 위치 허용으로 들어왔다면 고양이를 실제 내 위치에 맞는 월드 자리에 세워요(내가 등록한 가게가 바로 옆에 생기도록)
+    try {
+      const g = JSON.parse(localStorage.getItem('bz_ll') || 'null'), an = g && g.lat ? await anchorLL() : null;
+      if (an) { const w = toWorld(an, g.lat, g.lng); P.x = w.x; P.z = w.z }
+    } catch (e) { }
     join(a);
   };
 
