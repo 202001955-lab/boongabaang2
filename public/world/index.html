@@ -352,6 +352,13 @@ const MAPTOUR=[['lg0','🔥 최근 목격','24시간 안에 이 자리에서 붕
 ['lgi','❓ 튜토리얼 다시 보기','이 설명은 오른쪽 위 ❓ 튜토리얼 버튼을 누르면 언제든 처음부터 다시 볼 수 있어요. 사용자 제보를 기반으로 한 표시라 영업을 보장하지는 않아요.']];
 function showLg(force){let seen=false;try{seen=localStorage.getItem('bz_lg2')=='1'}catch(e){}if(force||!seen){TS=MAPTOUR;tut(0)}}
 $('lgi').onclick=()=>showLg(true);$('lgok').onclick=()=>{$('lgx').style.display='none';try{localStorage.setItem('bz_lg','1')}catch(e){}};
+// 가게(가판대/이름표)를 직접 눌러도 정보 카드가 열려요
+(function(){const rc=new T.Raycaster(),v=new T.Vector2();
+ addEventListener('click',e=>{if(!ren||!e.target||e.target.id!=='c'||!running||placing||modal)return;
+  const r=ren.domElement.getBoundingClientRect();v.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);rc.setFromCamera(v,cam);
+  const vis=o=>{for(;o;o=o.parent)if(o.visible===false)return false;return true};
+  const hits=rc.intersectObjects(spots.map(k=>k.g).filter(Boolean),true).filter(h=>vis(h.object)&&!spots.some(k=>k.glow===h.object));
+  if(!hits.length)return;let o=hits[0].object;while(o&&!spots.some(k=>k.g===o))o=o.parent;const k=o&&spots.find(x=>x.g===o);if(k)show(k)})})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" onerror="window.__sbfail=1"></script>
 <script src="/world/live.js"></script>
