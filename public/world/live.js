@@ -189,6 +189,7 @@
     if (!(L.on && r)) return;
     const s = spots[spots.length - 1]; if (!s || s.id) return;
     if (r.real) { s.lat = r.real.lat; s.lng = r.real.lng } s.addr = null;
+    bub('<div style="text-align:center;padding:10px"><div style="font-size:36px">🐟</div><b>저장하는 중…</b></div>');
     createShop(s, r);
   };
   async function createShop(s, r) {
@@ -203,6 +204,10 @@
         const up = await sb.storage.from('shop-photos').upload(path, blob, { contentType: 'image/jpeg' });
         if (!up.error) { const url = sb.storage.from('shop-photos').getPublicUrl(path).data.publicUrl; await sb.from('shop_photos').insert({ shop_id: s.id, url }); s.photo = url } else console.warn('[bungzone] photo', up.error.message);
       }
+      const idx = spots.indexOf(s);
+      bub('<div style="text-align:center"><div style="font-size:44px">🎉</div><h3 style="margin:4px 0">만들어졌어요!</h3><p style="margin:4px 0">이제 동네 사람들도 이 붕어빵을 찾을 수 있어요.</p>'
+        + '<button class="b p" style="width:100%;margin-top:10px" data-x="gonew" data-i="' + idx + '">🚶 만들어진 곳으로 이동하기</button>'
+        + '<div class="g">' + (s.lat != null ? '<button class="b" data-x="realgo" data-i="' + idx + '">🌏 실제 지도에서 보기</button>' : '') + '<button class="b" data-x="close">닫기</button></div></div>');
     } catch (e) {
       try { closeBub() } catch (x) { }
       fail(/duplicate_shop/.test(e.message || '') ? '같은 자리(13m 안)에 이미 등록된 붕어빵이 있어요' : /too_many/.test(e.message || '') ? '하루에 5곳까지만 등록할 수 있어요' : '새 가게가 서버에 저장되지 않았어요', e);
@@ -249,6 +254,7 @@
     else if (x === 'rsave') revSave(i, +b.dataset.v);
     else if (x === 'revall') revAll(i);
     else if (x === 'rback') show(spots[i]);
+    else if (x === 'gonew') { const t = spots[i]; if (t) { leaveQ(1); closeBub(); P.x = t.x + 1.5; P.z = t.z + 3.4; autoT = null; say('🐟 새로 만든 붕어빵 앞이에요!') } }
     else if (x === 'realgo') { const s = spots[i]; if (s && s.lat != null) openReal(s) }
   });
   // 줄에서 나왔을 때 "맛있었나요?" 안내 (45초 이상 기다렸을 때만)
