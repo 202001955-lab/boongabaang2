@@ -273,8 +273,8 @@
   }
   const st9 = document.createElement('style');
   st9.textContent = `#rmap,#rpick{position:fixed;inset:0;z-index:30;background:var(--bg);color:var(--ink);display:none;flex-direction:column}
-.rh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px))}
-.rh span{display:flex;gap:6px}.rc{padding:10px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:42%;overflow:auto;font-size:14px;background:var(--bg)}
+.rh{position:relative;z-index:2000;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.rh button{min-width:44px;min-height:44px;touch-action:manipulation}.rh span{display:flex;gap:6px}.rc{padding:10px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:42%;overflow:auto;font-size:14px;background:var(--bg)}
 .rm-pin{font-size:20px;background:#fff;border:2px solid #D98A2B;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px #0004}.rm-pin.old{opacity:.55}
 .mapwrap{position:relative;flex:1;min-height:200px}.mapwrap>div:first-child{position:absolute;inset:0}
 .pkpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:34px;z-index:1000;pointer-events:none;filter:drop-shadow(0 2px 2px #0006)}
@@ -289,11 +289,15 @@
     } catch (e) { }
     return null;
   }
-  async function startCenter() {
-    try { const g = JSON.parse(localStorage.getItem('bz_ll') || 'null'); if (g && g.lat) return [g.lat, g.lng] } catch (e) { }
+  // 월드에서 고른 자리(r.x, r.z 미터)를 실제 지도 위 기준점에 더해서 핀을 그 근처에서 시작해요
+  async function startCenter(r) {
+    let base = null;
+    try { const g = JSON.parse(localStorage.getItem('bz_ll') || 'null'); if (g && g.lat) base = [g.lat, g.lng] } catch (e) { }
     const a = String(L.area || (typeof area === 'string' ? area : '') || ''), m = /\((-?[\d.]+),\s*(-?[\d.]+)\)/.exec(a);
-    if (m) return [+m[1], +m[2]];
-    return (a && await geocode(a)) || KR;
+    if (!base && m) base = [+m[1], +m[2]];
+    if (!base) base = (a && await geocode(a)) || KR;
+    if (r && typeof r.x === 'number' && typeof r.z === 'number') base = [base[0] - r.z / 111000, base[1] + r.x / (111000 * Math.cos(base[0] * Math.PI / 180))];
+    return base;
   }
   const dist = (a, b) => { const R = 6371000, r = Math.PI / 180, dy = (b[0] - a[0]) * r, dx = (b[1] - a[1]) * r * Math.cos((a[0] + b[0]) / 2 * r); return Math.round(Math.hypot(dx, dy) * R) };
 
@@ -305,6 +309,7 @@
     document.body.appendChild(el);
     ['rmap'].forEach(() => el.addEventListener('keydown', e => e.stopPropagation()));
     $('rx').onclick = () => { el.style.display = 'none' };
+    $('rx').addEventListener('touchend', e => { e.preventDefault(); el.style.display = 'none' }, { passive: false });
     $('rme').onclick = () => {
       if (!navigator.geolocation) return;
       $('rmc').innerHTML = '<small>위치를 확인하는 중…</small>';
@@ -363,10 +368,13 @@
     el = mk(`<div id="rpick" role="dialog" aria-label="가게 위치 찍기"><div class="rh"><b>📍 실제 가게 위치를 찍어주세요</b><button class="b" id="pkx" aria-label="닫기">✕</button></div>
 <div style="display:flex;gap:6px;padding:0 12px 8px"><input id="pks" maxlength="40" placeholder="장소 검색 (예: 부천역 1번 출구)" aria-label="장소 검색"><button class="b" id="pkg">🔍</button></div>
 <div class="mapwrap"><div id="pkm"></div><div class="pkpin">📍</div></div>
-<div class="rc" id="pkc"><small>지도를 움직여서 📍 핀 끝을 붕어빵 가게 위치에 맞춰주세요.</small><div class="g"><button class="b" id="pkme">📍 내 위치로</button><button class="b p" id="pkok">여기로 등록</button></div></div></div>`);
+<div class="rc" id="pkc"><small>월드에서 고른 자리를 기준으로 시작했어요. 지도를 움직여서 📍 핀 끝을 실제 가게 위치에 맞춰주세요.</small><div class="g"><button class="b" id="pkme">📍 내 위치로</button><button class="b p" id="pkok">여기로 등록</button></div><button class="b" id="pkc2" style="width:100%;margin-top:8px">취소</button></div></div>`);
     document.body.appendChild(el);
     el.addEventListener('keydown', e => e.stopPropagation());
-    $('pkx').onclick = () => { el.style.display = 'none' };
+    const closePk = () => { el.style.display = 'none'; pkDone = null };
+    $('pkx').onclick = closePk; $('pkc2').onclick = closePk;
+    $('pkx').addEventListener('touchend', e => { e.preventDefault(); closePk() }, { passive: false });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && el.style.display !== 'none') closePk() });
     $('pkg').onclick = async () => {
       const q = $('pks').value.trim(); if (!q) return;
       const c = await geocode(q); if (c) pk.setView(c, 17); else $('pkc').firstChild.textContent = '장소를 못 찾았어요. 다른 말로 검색하거나 지도를 직접 움직여 주세요.';
@@ -388,7 +396,7 @@
     loadLeaflet().then(async () => {
       const lf = LF();
       if (!pk) { pk = lf.map('pkm'); tiles(lf).addTo(pk) }
-      const c = r.real ? [r.real.lat, r.real.lng] : await startCenter();
+      const c = r.real ? [r.real.lat, r.real.lng] : await startCenter(r);
       pk.setView(c, 17); setTimeout(() => pk.invalidateSize(), 60);
     }).catch(() => { $('pkc').firstChild.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.' });
   }
