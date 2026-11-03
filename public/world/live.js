@@ -12,7 +12,7 @@
   const hashStr = t => { let h = 0; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) };
   const sbUrl = () => (L.cfg && L.cfg.url) || '';
   const safePhoto = u => typeof u === 'string' && u.startsWith(sbUrl() + '/storage/') ? u : null;
-  const fail = (m, e) => { console.warn('[bungzone]', m, e && (e.message || e)); try { say(m) } catch (x) { } };
+  const fail = (m, e) => { console.warn('[bungzone]', m, e); const d = e && (e.message || e.code) ? ' [' + String(e.message || e.code).slice(0, 70) + ']' : ''; try { say(m + d) } catch (x) { } };
 
   /* ---------- 1. 시작: 설정 읽기 → 클라이언트 → 익명 로그인 ---------- */
   L.initP = (async () => {
