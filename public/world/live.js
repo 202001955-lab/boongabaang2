@@ -207,7 +207,7 @@
       const idx = spots.indexOf(s);
       bub('<div style="text-align:center"><div style="font-size:44px">🎉</div><h3 style="margin:4px 0">만들어졌어요!</h3><p style="margin:4px 0">이제 동네 사람들도 이 붕어빵을 찾을 수 있어요.</p>'
         + '<button class="b p" style="width:100%;margin-top:10px" data-x="gonew" data-i="' + idx + '">🚶 만들어진 곳으로 이동하기</button>'
-        + '<div class="g">' + (s.lat != null ? '<button class="b" data-x="realgo" data-i="' + idx + '">🌏 실제 지도에서 보기</button>' : '') + '<button class="b" data-x="close">닫기</button></div></div>');
+        + (s.lat != null ? '<button class="b" style="width:100%;margin-top:8px" data-x="realgo" data-i="' + idx + '">🌏 실제 지도에서 보기</button>' : '') + '<button class="b" style="width:100%;margin-top:8px" data-x="close">닫기</button></div>');
     } catch (e) {
       try { closeBub() } catch (x) { }
       fail(/duplicate_shop/.test(e.message || '') ? '같은 자리(13m 안)에 이미 등록된 붕어빵이 있어요' : /too_many/.test(e.message || '') ? '하루에 5곳까지만 등록할 수 있어요' : '새 가게가 서버에 저장되지 않았어요', e);
@@ -294,11 +294,21 @@
   document.head.appendChild(st9);
   const mk = html => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild };
   const tiles = lf => lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+  // 장소 검색: OpenStreetMap 검색(Nominatim) → 안 되면 Photon 으로 한 번 더. 둘 다 무료라 가끔 느리거나 못 찾을 수 있어요.
+  async function getJSON(url) {
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), 7000);
+    try { const r = await fetch(url, { signal: ac.signal }); return r.ok ? await r.json() : null } catch (e) { return null } finally { clearTimeout(t) }
+  }
   async function geocode(q) {
-    try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=kr&accept-language=ko&q=' + encodeURIComponent(q));
-      const j = await r.json(); if (j && j[0]) return [+j[0].lat, +j[0].lon];
-    } catch (e) { }
+    q = String(q || '').trim().replace(/\s+/g, ' '); if (!q) return null;
+    const enc = encodeURIComponent(q);
+    let j = await getJSON('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=kr&accept-language=ko&q=' + enc);
+    if (j && j[0]) return [+j[0].lat, +j[0].lon];
+    j = await getJSON('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ko&q=' + enc + (/대한민국|한국/.test(q) ? '' : '%20대한민국'));
+    if (j && j[0]) return [+j[0].lat, +j[0].lon];
+    j = await getJSON('https://photon.komoot.io/api/?limit=1&lat=37.55&lon=127.0&q=' + enc);
+    const f = j && j.features && j.features[0];
+    if (f && f.geometry && f.geometry.coordinates) return [+f.geometry.coordinates[1], +f.geometry.coordinates[0]];
     return null;
   }
   // 월드에서 고른 자리(r.x, r.z 미터)를 실제 지도 위 기준점에 더해서 핀을 그 근처에서 시작해요
@@ -390,8 +400,10 @@
     $('rpx').addEventListener('touchend', e => { e.preventDefault(); closePk() }, { passive: false });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && el.style.display !== 'none') closePk() });
     $('rpg').onclick = async () => {
-      const q = $('rps').value.trim(); if (!q) return;
-      const c = await geocode(q); if (c) pk.setView(c, 17); else $('rpc').firstChild.textContent = '장소를 못 찾았어요. 다른 말로 검색하거나 지도를 직접 움직여 주세요.';
+      const q = $('rps').value.trim(); if (!q) return; $('rpc').firstChild.textContent = '“' + q + '” 찾는 중…';
+      const c = await geocode(q);
+      if (c) { pk.setView(c, 18); $('rpc').firstChild.textContent = '“' + q + '” 근처로 이동했어요. 📍 핀 끝을 실제 가게 위치에 맞춰주세요.' }
+      else $('rpc').firstChild.textContent = '“' + q + '”을(를) 못 찾았어요. 더 짧게(예: 판교역) 검색하거나 지도를 직접 움직여 주세요.';
     };
     $('rps').addEventListener('keydown', e => { if (e.key === 'Enter') $('rpg').click() });
     $('rpme').onclick = () => {
