@@ -314,8 +314,7 @@
       if (!navigator.geolocation) return;
       $('rmc').innerHTML = '<small>위치를 확인하는 중…</small>';
       navigator.geolocation.getCurrentPosition(p => {
-        rmMeLL = [p.coords.latitude, p.coords.longitude]; if (rmMe) rmMe.remove();
-        rmMe = LF().circleMarker(rmMeLL, { radius: 8, color: '#fff', weight: 3, fillColor: '#2f7bff', fillOpacity: 1 }).addTo(rm); rm.setView(rmMeLL, 16);
+        showMe([p.coords.latitude, p.coords.longitude]); rm.setView(rmMeLL, 16);
       }, e => { $('rmc').innerHTML = '<b>📍 위치를 쓸 수 없어요</b><br><small>' + esc(geoMsg(e)) + '</small>' }, { timeout: 15000, maximumAge: 60000 });
     };
     return el;
@@ -330,7 +329,10 @@
     }
     rmSel = focus && focus.lat != null ? focus : null;
     rm.setView(c, 16); setTimeout(() => { rm.invalidateSize(); fetchBox() }, 60);
+    if (!focus && navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { showMe([p.coords.latitude, p.coords.longitude]); rm.setView(rmMeLL, 16) },
+      e => { if (!rmSel) $('rmc').innerHTML = '<small>' + esc(geoMsg(e)) + '</small>' }, { timeout: 10000, maximumAge: 60000 });
   }
+  function showMe(ll) { rmMeLL = ll; if (rmMe) rmMe.remove(); rmMe = LF().circleMarker(ll, { radius: 8, color: '#fff', weight: 3, fillColor: '#2f7bff', fillOpacity: 1 }).addTo(rm) }
   async function fetchBox() {
     if (!rm || $('rmap').style.display === 'none') return;
     if (rm.getZoom() < 12) { $('rmc').innerHTML = '<small>조금 더 확대하면 가게가 보여요.</small>'; return }
@@ -368,7 +370,7 @@
     el = mk(`<div id="rpick" role="dialog" aria-label="가게 위치 찍기"><div class="rh"><b>📍 실제 가게 위치를 찍어주세요</b><button class="b" id="rpx" aria-label="닫기">✕</button></div>
 <div style="display:flex;gap:6px;padding:0 12px 8px"><input id="rps" maxlength="40" placeholder="장소 검색 (예: 부천역 1번 출구)" aria-label="장소 검색"><button class="b" id="rpg">🔍</button></div>
 <div class="mapwrap"><div id="rpm"></div><div class="rppin">📍</div></div>
-<div class="rc" id="rpc"><small>월드에서 고른 자리를 기준으로 시작했어요. 지도를 움직여서 📍 핀 끝을 실제 가게 위치에 맞춰주세요.</small><div class="g"><button class="b" id="rpme">📍 내 위치로</button><button class="b p" id="rpok">여기로 등록</button></div><button class="b" id="rpcancel" style="width:100%;margin-top:8px">취소</button></div></div>`);
+<div class="rc" id="rpc"><small>지도를 불러오는 중…</small><div class="g"><button class="b" id="rpme">📍 내 위치로</button><button class="b p" id="rpok">여기로 등록</button></div><button class="b" id="rpcancel" style="width:100%;margin-top:8px">취소</button></div></div>`);
     document.body.appendChild(el);
     el.addEventListener('keydown', e => e.stopPropagation());
     const closePk = () => { el.style.display = 'none'; pkDone = null };
@@ -386,19 +388,53 @@
     };
     $('rpok').onclick = () => {
       if (!pk || !pkR) return; const c = pk.getCenter();
+      if (pkR.limit && pkR.gps && dist([c.lat, c.lng], pkR.gps) > pkR.limit + 10) { $('rpc').firstChild.textContent = '동그라미 밖이에요. 지금 있는 곳 ' + pkR.limit + 'm 안으로 핀을 옮겨주세요.'; return }
       pkR.real = { lat: +c.lat.toFixed(6), lng: +c.lng.toFixed(6) };
       el.style.display = 'none'; const f = pkDone; pkDone = null; if (f) f();
     };
     return el;
   }
-  function pickReal(r, done) {
-    const el = ensurePK(); el.style.display = 'flex'; pkR = r; pkDone = done;
+  let pkCircle = null;
+  const PK_HELP = '지도를 움직여서 📍 핀 끝을 실제 가게 위치에 맞춰주세요.';
+  function pickReal(r, done, opts) {
+    const el = ensurePK(); el.style.display = 'flex'; pkR = r; pkDone = done; r.limit = opts && opts.limit || 0;
     loadLeaflet().then(async () => {
       const lf = LF();
       if (!pk) { pk = lf.map('rpm'); tiles(lf).addTo(pk) }
-      const c = r.real ? [r.real.lat, r.real.lng] : await startCenter(r);
-      pk.setView(c, 17); setTimeout(() => pk.invalidateSize(), 60);
+      if (pkCircle) { pkCircle.remove(); pkCircle = null }
+      const c = opts && opts.center || (r.real ? [r.real.lat, r.real.lng] : await startCenter(r));
+      if (r.limit && r.gps) pkCircle = lf.circle(r.gps, { radius: r.limit, color: '#D98A2B', weight: 2, fillOpacity: .08, interactive: false }).addTo(pk);
+      $('rpc').firstChild.textContent = r.limit ? '지금 있는 곳에서 ' + r.limit + 'm 안(동그라미)에서만 등록할 수 있어요. ' + PK_HELP : (opts && opts.msg) || '월드에서 고른 자리를 기준으로 시작했어요. ' + PK_HELP;
+      pk.setView(c, 18); setTimeout(() => pk.invalidateSize(), 60);
     }).catch(() => { $('rpc').firstChild.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.' });
+  }
+
+  // --- 등록: 지금 있는 곳(GPS)에서만, 실제 지도 한 번으로 끝 ---
+  async function anchorLL() {
+    const a = String(L.area || (typeof area === 'string' ? area : '') || ''), m = /\((-?[\d.]+),\s*(-?[\d.]+)\)/.exec(a);
+    if (m) return [+m[1], +m[2]];
+    if (L.anchorFor === a) return L.anchor;
+    const g = a ? await geocode(a) : null; L.anchorFor = a; L.anchor = g; return g;
+  }
+  const toWorld = (an, lat, lng) => {
+    const c = v => Math.max(-240, Math.min(240, Math.round(v * 10) / 10));
+    return { x: c((lng - an[1]) * 111000 * Math.cos(an[0] * Math.PI / 180)), z: c(-(lat - an[0]) * 111000) };
+  };
+  function startReal() {
+    if (!navigator.geolocation) { say('이 브라우저는 위치를 지원하지 않아요'); return }
+    say('지금 위치를 확인하는 중…');
+    navigator.geolocation.getCurrentPosition(async p => {
+      const gps = [p.coords.latitude, p.coords.longitude], an = await anchorLL();
+      if (an && dist(an, gps) > 2500) {
+        bub('<b>📍 이 동네에서 너무 멀어요</b><p style="margin:6px 0">지금 있는 곳이 선택한 동네(' + esc(area) + ')에서 많이 떨어져 있어요. 붕어빵을 발견한 곳 근처 동네로 입장해서 등록해 주세요.</p><button class="b p" style="width:100%" data-x="close">확인</button>');
+        return;
+      }
+      const r = { gps, real: null };
+      pickReal(r, () => {
+        const real = r.real, w = an ? toWorld(an, real.lat, real.lng) : { x: 0, z: 0 };
+        regStart(w.x, w.z); if (reg) reg.real = real;
+      }, { center: gps, limit: 150 });
+    }, e => geoFail(e), { timeout: 15000, maximumAge: 30000 });
   }
 
   // 진입 버튼(🌏)과 가게 카드의 "실제 지도에서 보기"
@@ -406,6 +442,8 @@
     if (!L.on || !$('mapb') || $('rmapb')) return;
     $('mapb').insertAdjacentHTML('afterend', '<button class="glass" id="rmapb" aria-label="실제 지도 열기" style="border:0">🌏</button>');
     $('rmapb').onclick = () => openReal();
+    $('b4').onclick = startReal; // 가게 등록은 지금 있는 곳 기준
+    if ($('enter') && !$('rfirst')) { $('enter').insertAdjacentHTML('afterend', '<button class="btn s" id="rfirst" style="width:100%;margin-top:10px">🌏 지도로 근처 붕어빵 찾기</button>'); $('rfirst').onclick = () => openReal() }
   });
   L.openReal = openReal;
 
