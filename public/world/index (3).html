@@ -1,0 +1,358 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>붕세권 · 붕어야, 어디니?</title><!-- v2.1 -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{--bg:#FFF8E8;--ink:#3B2A1A;--bun:#D98A2B;--azu:#7A2E3A;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#3A3026;--ink:#FFF3DC}}
+html,body{height:100%;margin:0;overflow:hidden;background:#1F3140;color:var(--ink);font-family:Pretendard,system-ui,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%}button{font:inherit;cursor:pointer}
+.scr{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;color:#FFF3DC;background:transparent;z-index:9;overflow:auto}
+.scr h1{font-size:54px;margin:0;letter-spacing:-1px}.scr p{margin:0;opacity:.85;max-width:320px;line-height:1.5}
+.btn{border:0;border-radius:16px;padding:14px 22px;font-weight:700;font-size:16px;background:var(--bun);color:#fff;min-width:200px}.btn.s{background:#ffffff1c;color:#FFE9C2;border:1.5px solid #FFE3B055}.scr .btn:not(.s){background:#FFE3B0;color:#4A1C08}.scr h1{color:#FFE7B8}
+.hud{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;right:10px;display:flex;gap:8px;align-items:center;pointer-events:none}
+.glass{background:#2a1f1899;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border-radius:99px;padding:9px 14px;font-size:14px;pointer-events:auto}
+#area{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;font-size:13px}#arr{display:inline-block;transition:transform .1s}#tag{position:fixed;transform:translate(-50%,-100%);background:#fffc;color:#3B2A1A;border-radius:99px;padding:3px 10px;font-size:13px;font-weight:700;pointer-events:none;white-space:nowrap}
+#hint{position:fixed;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;text-align:center;color:#fff;font-size:13px;text-shadow:0 1px 4px #000a;pointer-events:none}
+#bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;padding:8px 10px;border-radius:28px;background:#2a1f18aa;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#bar button{background:none;border:0;color:#fff;width:58px;padding:6px 0;font-size:12px;display:flex;flex-direction:column;gap:2px;align-items:center}#bar i{font-style:normal;font-size:24px}
+#joy{position:fixed;left:18px;bottom:calc(100px + env(safe-area-inset-bottom,0px));width:110px;height:110px;border-radius:50%;background:#0003;border:2px solid #fff6}#knob{position:absolute;left:35px;top:35px;width:40px;height:40px;border-radius:50%;background:#fffd}
+#toast{position:fixed;top:40%;left:50%;transform:translateX(-50%);background:#FFF8E8;color:#3B2A1A;padding:8px 16px;border-radius:99px;font-weight:700;display:none;box-shadow:0 3px 10px #0004;z-index:6;max-width:80%;text-align:center}
+.bub{position:fixed;left:10px;right:10px;bottom:10px;max-width:520px;margin:auto;background:var(--bg);border:4px solid var(--bun);border-radius:24px;padding:16px;display:none;max-height:72%;overflow:auto;z-index:8;touch-action:pan-y}
+.tag{display:inline-block;background:var(--bun);color:#fff;border-radius:99px;padding:3px 14px;font-weight:700;font-size:14px;margin-bottom:10px}
+.b{border:0;border-radius:14px;padding:12px;font-weight:700;background:#0001;color:var(--ink)}.p{background:var(--bun);color:#fff}.g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.box{background:#0001;border-radius:12px;padding:10px;margin-top:8px;font-size:14px}
+input{width:100%;box-sizing:border-box;padding:12px;border:2px solid #0002;border-radius:12px;margin-top:8px;font:inherit;user-select:text}.chips{display:flex;gap:6px;margin-top:8px}.chips button{flex:1;padding:10px;border:0;border-radius:10px;background:#0001;color:var(--ink)}.chips .on{background:var(--bun);color:#fff}
+#map{position:fixed;inset:0;z-index:7;background:#1F3140ee;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;box-sizing:border-box}
+#mbox{position:relative;width:min(92vw,62vh);aspect-ratio:1;background:#E9EFF3;border-radius:20px;overflow:hidden}#mbox .rd{position:absolute;background:#5a636b}
+.mk{position:absolute;transform:translate(-50%,-50%);background:#fff;border:2px solid var(--bun);border-radius:12px;font-size:18px;padding:2px 4px;display:flex;flex-direction:column;align-items:center;line-height:1.1;color:#3B2A1A}.mk small{font-size:9px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me{position:absolute;transform:translate(-50%,-50%);font-size:22px;pointer-events:none;filter:drop-shadow(0 0 3px #fff)}#mcard{background:var(--bg);color:var(--ink);border-radius:16px;padding:12px;width:min(92vw,62vh);box-sizing:border-box}
+#pk{position:fixed;inset:0;z-index:9;display:none;flex-direction:column;background:#1F3140}#pkmap{flex:1;position:relative;overflow:hidden;background:#E9EFF3;touch-action:none}#pkin{position:absolute;left:50%;top:50%;width:0;height:0}
+#pkpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-56px);width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid var(--bun);display:grid;place-items:center;font-size:24px;box-shadow:0 3px 8px #0004;pointer-events:none}#pkpin::after{content:'';position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);border:8px solid transparent;border-top-color:var(--bun);border-bottom:0}
+#pkbar{background:var(--bg);color:var(--ink);padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}#pka{font-weight:700;font-size:13px;margin-bottom:4px}.chip{background:#0001;border-radius:99px;padding:2px 8px;font-size:12px}.chip.cf{background:var(--bun);color:#fff}
+#tick{position:fixed;left:12px;right:12px;max-width:440px;margin:auto;top:calc(104px + env(safe-area-inset-top,0px));background:var(--bg);color:var(--ink);border-radius:14px;padding:8px 12px;font-size:13px;display:none;z-index:5;box-shadow:0 2px 8px #0004;cursor:pointer}
+#pbar{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;background:var(--bg);color:var(--ink);border:3px solid var(--bun);border-radius:18px;padding:10px 12px;z-index:6;display:none;box-sizing:border-box}#pbar p{margin:4px 0 8px;font-size:13px;line-height:1.4}
+#tut{position:fixed;inset:0;z-index:10;display:none}#ring{position:fixed;display:none;border-radius:18px;border:3px solid var(--bun);box-shadow:0 0 0 9999px #0a0f19b0;pointer-events:none;transition:all .25s}
+#tcard{position:fixed;left:12px;right:12px;max-width:440px;margin:auto;background:var(--bg);color:var(--ink);border:4px solid var(--bun);border-radius:22px;padding:14px 16px;box-sizing:border-box}#tcard p{margin:6px 0;line-height:1.5;font-size:14px}.hud button.glass{padding:8px 10px}
+#bgty{position:fixed;inset:0;z-index:8;background-color:#4A1C08;overflow:hidden}#bgty svg{position:absolute;left:-90px;top:-90px;width:calc(100% + 180px);height:calc(100% + 180px);opacity:.4}
+@media(prefers-reduced-motion:no-preference){#bgty svg{animation:dr 40s linear infinite alternate}}@keyframes dr{to{transform:translate(70px,50px)}}
+@media(prefers-reduced-motion:no-preference){#bgty .ty{animation:fl 6s ease-in-out infinite alternate}#cp{animation:fl 1.6s ease-in-out infinite alternate}}@keyframes fl{to{margin-top:10px}}
+#cp{position:static;width:200px;height:200px}#dlg{width:calc(100% - 24px);max-width:520px;box-sizing:border-box;margin:0 auto calc(20px + env(safe-area-inset-bottom,0px));background:#FFF8E8;border-radius:34px;padding:28px 24px 22px;position:relative;text-align:left;color:#5a3a22;font-size:20px;line-height:1.6;box-shadow:0 4px 14px #0003;cursor:pointer}
+.nt{position:absolute;top:-16px;left:22px;background:#E8812B;color:#fff;border-radius:99px;padding:3px 16px;font-weight:700;font-size:15px}#dlg i{position:absolute;right:26px;bottom:10px;color:#E8812B;font-style:normal;animation:bn 1s infinite alternate}@keyframes bn{to{transform:translateY(4px)}}.hl{color:#E8812B;font-weight:700}.hl2{color:#E0679A;font-weight:700}
+#intro{align-items:flex-start;justify-content:space-between;text-align:left;max-width:520px;margin:0 auto;padding:calc(48px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px))}
+#intro h1{font-size:44px;line-height:1.18;margin:16px 0 12px;letter-spacing:-1.5px;color:#FFE7B8;text-shadow:0 2px 10px #2a0e04aa}#intro p{font-size:17px;line-height:1.55;color:#F0D6AE;opacity:1;max-width:none;text-shadow:0 1px 8px #2a0e04aa}
+.pill{display:inline-block;background:#FFE3B0;color:#5A2A0C;font-weight:700;font-size:13px;padding:7px 13px;border-radius:99px;box-shadow:0 1px 4px #c9783a22}
+.hero{flex:1;width:100%;position:relative;display:grid;place-items:center;min-height:0}.blob{position:absolute;width:min(72vw,300px);aspect-ratio:1;border-radius:50%;background:#6B2A10}
+.hero svg{position:relative;filter:drop-shadow(0 12px 14px #00000066)}.hero .h1t{width:min(64vw,270px);transform:rotate(-10deg)}.hero .h2t{position:absolute;width:84px;right:10%;bottom:10%;transform:rotate(18deg)}
+@media(prefers-reduced-motion:no-preference){.hero .h1t{animation:fl 3s ease-in-out infinite alternate}.hero .h2t{animation:fl 2.4s ease-in-out infinite alternate-reverse}}
+#loc{justify-content:flex-start;padding-top:calc(36px + env(safe-area-inset-top,0px))}#stl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:340px;max-height:230px;overflow:auto;touch-action:pan-y;padding:2px}#stl button{min-width:0;padding:9px 14px;font-size:14px}#stl small{width:100%;opacity:.7}
+#map .lg,.lg{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:min(92vw,62vh)}.lg span{background:#fff;color:#3B2A1A;border-radius:99px;padding:4px 10px;font-size:12px;font-weight:700;box-shadow:0 1px 4px #0003}
+#tskip{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:2;border:0;border-radius:99px;padding:9px 14px;font-size:13px;font-weight:700;background:#fff;color:#3B2A1A;box-shadow:0 2px 8px #0005}
+#lgx{position:fixed;left:12px;right:12px;max-width:440px;margin:auto;top:50%;transform:translateY(-50%);background:var(--bg);color:var(--ink);border:4px solid var(--bun);border-radius:22px;padding:16px;z-index:3;display:none;box-sizing:border-box;max-height:84vh;overflow:auto;touch-action:pan-y}#lgx p{margin:10px 0;font-size:14px;line-height:1.5}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+</style></head><body>
+<canvas id="c"></canvas><div id="tag">나 · 은은한 붕어</div>
+<div class="hud"><button class="glass" id="back" aria-label="위치 다시 설정" style="border:0">←</button><span class="glass" id="area"></span><button class="glass" id="helpb" aria-label="도움말" style="border:0">❓</button><button class="glass" id="mapb" aria-label="지도 열기" style="border:0">🗺️</button><button class="glass" id="musb" aria-label="배경음 켜기/끄기" style="border:0">🔊</button><button class="glass" id="nickb" aria-label="닉네임 바꾸기" style="border:0">🐱</button><span class="glass" id="cmp" style="margin-left:auto">🧭 <span id="arr">▲</span> <span id="dist"></span></span></div>
+<div id="hint" style="display:none"></div><div id="toast" role="status"></div>
+<div id="joy"><div id="knob"></div></div>
+<div id="bar"><button id="b1"><i>👀</i>구경하기</button><button id="b2"><i>🔥</i>봤어요</button><button id="b3"><i>🧍</i>줄서기</button><button id="b4"><i>➕</i>발견</button><button id="b5"><i>💬</i>대화</button></div>
+<div id="pk"><div style="display:flex;align-items:center;gap:10px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top,0px))"><button class="glass" id="pkx" aria-label="취소" style="border:0">←</button><b style="color:#fff">붕어빵 위치 지정</b></div><div id="pkmap"><div id="pkin"></div><div class="lg" style="position:absolute;top:10px;left:0;right:0;width:auto;pointer-events:none"><span>🔥 최근 목격</span><span>🐟 며칠 전 목격</span><span>🌙 지금은 없을 수도</span><span>🌫️ 오래된 제보</span></div><div id="pkpin">🐟</div></div><div id="pkbar"><div id="pka"></div><small style="opacity:.7">지도를 움직여 가운데 핀을 가게 위치에 맞춰주세요. (주소 변환은 지도 API 연결 후 표시돼요)</small><div style="display:flex;gap:8px;margin-top:8px"><button class="b" id="pkme">📍 현재 위치</button><button class="b p" id="pkok" style="flex:1">이 위치에 붕어빵 등록하기</button></div></div></div>
+<div id="tick" role="status"></div>
+<div id="pbar"><b>📍 가게를 놓을 곳을 정해요</b><p>걸어서 위치를 맞추거나 🗺️ 지도에서 눌러 정할 수 있어요. 내 위치가 아니라 <b>붕어빵 가게 위치</b>로 등록돼요.</p><div style="display:grid;grid-template-columns:1fr 1.3fr 1.3fr;gap:6px"><button class="b" id="pc">취소</button><button class="b" id="pm">🗺️ 지도에서</button><button class="b p" id="po">여기로 정하기</button></div></div>
+<div id="tut"><div id="ring"></div><button id="tskip" aria-label="튜토리얼 건너뛰기">튜토리얼 건너뛰기 ✕</button><div id="tcard" role="dialog" aria-live="polite"></div></div>
+<div id="map"><div style="width:min(92vw,62vh);display:flex;justify-content:space-between;align-items:center;color:#fff"><b>🗺️ 붕어빵 가게 지도</b><span style="display:flex;gap:8px"><button class="glass" id="lgi" aria-label="튜토리얼 다시 보기" style="border:0">❓ 튜토리얼</button><button class="glass" id="mclose" aria-label="지도 닫기" style="border:0">✕</button></span></div><div id="mbox"></div><div class="lg"><span>🔥 최근 목격</span><span>🐟 며칠 전 목격</span><span>🌙 지금은 없을 수도</span><span>🌫️ 오래된 제보</span></div><div id="lgx" role="dialog" aria-label="지도 표시 기준"><b style="font-size:16px">지도 표시, 이렇게 읽어요</b>
+<p>🔥 <b>최근 목격</b><br>24시간 안에 이 자리에서 붕어빵을 본 사람이 있어요. 예를 들어 10분 안에 봤다면 지금도 있을 가능성이 높아요! 최근일수록 가게 주변이 더 환하게 빛나요.</p>
+<p>🐟 <b>며칠 전 목격</b><br>1~7일 전에 목격됐어요. 오늘은 안 나왔을 수도 있어요.</p>
+<p>🌙 <b>지금은 없을 수도</b><br>최근 1시간 안에 "지금은 없어요" 제보가 마지막 목격보다 더 늦게 들어왔어요. 잠깐 자리를 비웠을 수 있어요.</p>
+<p>🌫️ <b>오래된 제보</b><br>7일이 넘도록 아무도 확인하지 않았어요. 아직 있는지 직접 알려주세요!</p>
+<small style="opacity:.7">사용자 제보를 기반으로 한 표시예요. 영업을 보장하지는 않아요.</small><button class="b p" id="lgok" style="width:100%;margin-top:10px">알겠어요</button></div><div id="mcard"></div></div>
+<div class="bub" id="bub" role="dialog"></div>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="ty" viewBox="0 0 130 84"><path d="M26 42C26 18 60 8 92 16c16 4 26 14 26 26s-10 22-26 26C60 76 26 66 26 42Z" fill="#F0A94E"/><path d="M28 42L6 20c-3 4-4 10 0 22-4 12-3 18 0 22Z" fill="#F0A94E"/><g fill="none" stroke="#C98A3D" stroke-width="3" stroke-linecap="round"><path d="M62 26q6 4 0 8t0 8 0 8"/><path d="M72 24q6 4 0 8t0 8 0 8"/><path d="M82 24q6 4 0 8t0 8 0 8"/><path d="M12 28l8 8M12 54l8-8"/></g><circle cx="104" cy="34" r="3" fill="#C98A3D"/></symbol><symbol id="tyb" viewBox="0 0 130 84"><use href="#ty"/><ellipse cx="106" cy="42" rx="14" ry="18" fill="#5A2410" stroke="#FFD58A" stroke-width="3.5"/></symbol></defs></svg>
+<div id="bgty"></div>
+<div class="scr" id="intro" style="display:flex"><div style="width:100%"><span class="pill">🐟 동네 붕어빵 실시간 발견</span><h1>붕어야,<br>어디니?</h1><p>지금 우리 동네에서 목격된<br>붕어빵을 찾아보세요.</p></div><div class="hero"><div class="blob"></div><svg class="h1t" viewBox="0 0 130 84" aria-hidden="true"><use href="#ty"/></svg><svg class="h2t" viewBox="0 0 130 84" aria-hidden="true"><use href="#tyb"/></svg></div><button class="btn" id="enter" style="width:100%;padding:18px;font-size:18px;border-radius:18px">입장하기</button></div>
+<div class="scr" id="welcome" style="justify-content:flex-end;padding:0"><div style="flex:1;display:grid;place-items:center"><canvas id="cp" width="200" height="200" aria-label="나의 고양이"></canvas></div><div id="dlg" role="button" tabindex="0" aria-label="다음"><span class="nt">사장냥</span><p id="dt" style="margin:0;opacity:1;max-width:none"></p><i>▼</i></div></div>
+<div class="scr" id="nick"><div style="font-size:48px">🐱</div><h2 style="margin:0">닉네임 설정</h2><p>붕어 줄에서 다른 고양이들에게 보여질 이름이에요.</p><input id="nk" maxlength="10" aria-label="닉네임" style="max-width:260px;text-align:center;font-size:18px;color:#3B2A1A"><button class="btn s" id="dice">🎲 랜덤 닉네임</button><p id="nm" role="alert"></p><button class="btn" id="nnext">다음</button></div>
+<div class="scr" id="ask"><div style="font-size:56px">📍</div><h2 style="margin:0">내 주변 붕어빵을 찾아볼까요? 🐟</h2><p>현재 위치를 사용하면 내 주변의 붕어빵과 지금 이 동네를 돌아다니는 고양이들을 볼 수 있어요.</p><small>내 실제 위치가 다른 사용자에게 그대로 공개되지는 않아요.</small><button class="btn" id="askgo">현재 위치 사용하기</button><button class="btn s" id="askman">지역 직접 선택</button></div>
+<div class="scr" id="loc"><h2 style="margin:0">내 위치 설정</h2><p>어느 지역이든 직접 정할 수 있어요. 그 지역에서 붕세권을 찾고 새 가게도 놓을 수 있어요.<br><small>내 위치는 저장되거나 다른 사람에게 공개되지 않아요.</small></p><button class="btn" id="gps">📍 현재 위치로 설정</button><p id="lm"></p><input id="ra" maxlength="20" placeholder="역 이름 검색 (예: 판교)" aria-label="지역 이름" style="max-width:280px;text-align:center;color:#3B2A1A"><button class="btn" id="rgo">이 지역으로 가기</button><small id="rm" role="alert"></small><div id="rec" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px"></div><div id="stl" role="list" aria-label="역 목록"></div></div>
+<div class="scr" id="scan"><div style="font-size:56px">📡</div><h2 id="st" style="margin:0"></h2><p id="sm"></p><button class="btn" id="go" style="display:none">걸어서 찾아보기</button></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.LIVE={on:false}</script>
+<script>
+const $=id=>document.getElementById(id),T=THREE,hr=n=>Date.now()-n*36e5;
+const fr=t=>{const h=(Date.now()-t)/36e5;return h<24?{e:'🔥',c:0xC8412F}:h<168?{e:'🐟',c:0xD98A2B}:{e:'🌫️',c:0x9aa0a6,old:1}};
+const ago=t=>{const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전'};
+const scr=id=>{document.querySelectorAll('.scr').forEach(e=>e.style.display='none');if(id)$(id).style.display='flex';$('bgty').style.display=id?'block':'none'};
+let sc,cam,ren,pl,world,snow,yaw=0,spots=[],P={x:0,z:0,mov:0},inQ=null,autoT=null,joy={x:0,y:0},K={},area='',running=false,near=null,clock,menu='팥',modal=false;
+$('enter').onclick=()=>scr('nick');
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>pick(b.dataset.a,[...b.dataset.a].reduce((a,c)=>a*31+c.charCodeAt(0),7)));
+const geoMsg=e=>e&&e.code==1?'위치 권한이 꺼져 있어요. 주소창 왼쪽 아이콘에서 위치를 "허용"으로 바꾸고 다시 눌러 주세요. (카카오톡 같은 앱 안에서 열었다면 Safari/Chrome에서 열어 주세요)':e&&e.code==2?'이 기기에서 위치를 찾지 못했어요. 기기의 위치 서비스가 꺼져 있는지 확인하거나, 아래에서 동네를 직접 골라 주세요.':'위치 확인이 오래 걸려요. 다시 눌러 보시거나 아래에서 동네를 직접 골라 주세요.';
+const geoFail=(e,toLoc)=>{if(toLoc)scr('loc');if(!(e&&e.code==1)){$('lm').textContent=geoMsg(e);return}
+ const ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua),and=/Android/.test(ua),how=ios?'<b>설정 앱</b> → 개인정보 보호 및 보안 → <b>위치 서비스</b>를 켜고, 아래쪽 <b>Safari 웹사이트</b>(또는 사용 중인 브라우저)를 <b>"앱을 사용하는 동안"</b>으로 바꿔 주세요.<br>그다음 주소창 왼쪽 <b>aA</b> → 웹사이트 설정 → 위치 → <b>허용</b>':and?'<b>설정 앱</b> → 위치를 켜고, Chrome 주소창 왼쪽 아이콘 → <b>권한</b> → 위치 → <b>허용</b>으로 바꿔 주세요.':'주소창 왼쪽 아이콘 → 사이트 설정 → 위치를 <b>허용</b>으로 바꾸고, 기기의 위치 서비스도 켜 주세요.';
+ bub('<b>📍 위치 권한이 필요해요</b><p style="margin:6px 0">내 주변 붕어빵을 찾으려면 위치를 허용해야 해요. 웹페이지에서 설정 앱을 바로 열 수는 없어서 직접 바꿔 주세요.</p><div class="box">'+how+'</div><small style="display:block;margin-top:6px">카카오톡 같은 앱 안에서 열었다면 Safari/Chrome에서 열어 주세요.</small><div class="g"><button class="b" data-x="geoman">동네 직접 고르기</button><button class="b p" data-x="georetry">다시 시도</button></div>')};
+$('bub').addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;if(b.dataset.x=='geoman'){closeBub();scr('loc')}else if(b.dataset.x=='georetry'){closeBub();$('lm')&&($('lm').textContent='위치를 확인하는 중…');navigator.geolocation.getCurrentPosition(gpsOK,x=>geoFail(x,1),{timeout:15e3})}});
+$('gps').onclick=()=>{$('lm').textContent='위치를 확인하는 중…';navigator.geolocation?navigator.geolocation.getCurrentPosition(gpsOK,e=>geoFail(e),{timeout:15e3,maximumAge:6e4}):$('lm').textContent='이 브라우저는 위치를 지원하지 않아요. 아래에서 동네를 골라주세요.'};
+function pick(a,seed){area=a;const fg=!!gpsNext;LL=gpsNext||fakeLL(a);gpsNext=null;try{localStorage.setItem('bz_loc',a);fg?localStorage.setItem('bz_ll',JSON.stringify(LL)):localStorage.removeItem('bz_ll')}catch(e){}scr('scan');$('st').textContent='주변 붕세권 확인 중…';$('sm').textContent=a+' 주변 반경 약 100m를 둘러보고 있어요';$('go').style.display='none';
+ if(!sc)init3d();build(hs(a));if(LIVE.on){spots.forEach(k=>{try{world.remove(k.g);(k.npc||[]).forEach(n=>world.remove(n))}catch(e){}});spots.length=0}(LIVE.on?[]:(userSpots[a]||[])).forEach(u=>{const k={...u,ev:u.ev||[],q:0,user:true};spots.push(k);stall(k)});recent=[a,...recent.filter(x=>x!==a)].slice(0,5);try{localStorage.setItem('bz_areas',JSON.stringify(recent))}catch(e){}renderRec();setTimeout(async()=>{if(LIVE.on)await LIVE.load(a);if(!spots.length){$('st').textContent='아직 등록된 붕어빵이 없어요';$('sm').textContent='첫 번째 발견자가 되어 보세요! 🐟';$('go').style.display='';return}const d=Math.min(...spots.map(s=>Math.hypot(s.x,s.z)))|0;$('st').textContent='붕어 '+spots.length+'곳 발견! 🎉';$('sm').textContent='가장 가까운 붕어는 약 '+d+'m 앞에 있어요.';$('go').style.display='';},1400)}
+$('go').onclick=()=>{scr(null);$('area').textContent=areaTxt();running=true;clock.getDelta();if(!tutDone&&!tutShown)setTimeout(()=>tut(0),400)};
+$('back').onclick=()=>{running=false;closeBub();endPlace();closeMap();scr('loc')};
+function init3d(){ren=new T.WebGLRenderer({canvas:$('c'),antialias:true});ren.setPixelRatio(Math.min(2,devicePixelRatio||1));sc=new T.Scene();sc.background=new T.Color(0x3B4E72);sc.fog=new T.Fog(0x3B4E72,35,150);
+ cam=new T.PerspectiveCamera(60,1,.1,300);sc.add(new T.HemisphereLight(0xdfe9ff,0x7d8aa3,.95));const dl=new T.DirectionalLight(0xfff0d8,.6);dl.position.set(30,50,20);sc.add(dl);
+ pl=person(myCat,0xD9533B,0);mkBub(pl,'');sc.add(pl);clock=new T.Clock();
+ const sp=new Float32Array(1500);for(let i=0;i<500;i++){sp[i*3]=(Math.random()-.5)*60;sp[i*3+1]=Math.random()*18;sp[i*3+2]=(Math.random()-.5)*60}
+ const gg=new T.BufferGeometry();gg.setAttribute('position',new T.BufferAttribute(sp,3));snow=new T.Points(gg,new T.PointsMaterial({color:0xffffff,size:.18}));snow.frustumCulled=false;sc.add(snow);
+ const rs=()=>{ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};rs();onresize=rs;requestAnimationFrame(loop)}
+const FURS=[0xE0903A,0xF2EEE6,0x555555,0xBDBDBD,0xE8C9A0,0x8B6B4A,0x2f2f33,0xF4B8A8,0xA9B8C9,0xD9A441],SCARF=[0xD9533B,0x3A78C8,0x2F8F5B,0xE0A030,0x8E5BB5,0xE06A9A,0x2AA6A6,0xFFFFFF],EYES=['dot','line','line','happy','big','angry','round'],FT={};
+// 같은 세계관 유지: 몸 모양은 동일, 털색/눈/귀/무늬/볼터치/꼬리만 시드로 변형
+function catStyle(sd){const r=rg(Math.abs(sd|0)+1);return{fur:FURS[r()*FURS.length|0],eye:EYES[r()*7|0],ear:r()*3|0,pat:r()*4|0,blush:r()<.5,tail:r()*3|0}}
+function drawFace(x,st,u){x.save();x.scale(u,u);x.lineWidth=7;x.lineCap='round';x.strokeStyle=x.fillStyle='#2b1d14';
+ if(st.pat==1){x.globalAlpha=.28;[44,64,84].forEach(a=>x.fillRect(a-3,14,6,24));x.globalAlpha=1}if(st.pat==2){x.globalAlpha=.25;x.beginPath();x.arc(36,50,26,0,7);x.fill();x.globalAlpha=1}
+ const E={dot:()=>[40,88].forEach(a=>{x.beginPath();x.arc(a,62,7,0,7);x.fill()}),line:()=>[40,88].forEach(a=>{x.beginPath();x.moveTo(a-12,64);x.lineTo(a+12,64);x.stroke()}),happy:()=>[40,88].forEach(a=>{x.beginPath();x.arc(a,70,11,Math.PI*1.1,Math.PI*1.9);x.stroke()}),
+  big:()=>[40,88].forEach(a=>{x.fillStyle='#fff';x.beginPath();x.arc(a,62,15,0,7);x.fill();x.fillStyle='#2b1d14';x.beginPath();x.arc(a,63,11,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(a+4,58,4,0,7);x.fill();x.fillStyle='#2b1d14'}),
+  angry:()=>{x.beginPath();x.moveTo(28,52);x.lineTo(50,63);x.lineTo(28,74);x.moveTo(100,52);x.lineTo(78,63);x.lineTo(100,74);x.stroke()},round:()=>{x.lineWidth=5;[40,88].forEach(a=>{x.beginPath();x.arc(a,63,10,0,7);x.stroke()})}};
+ E[st.eye]();x.fillStyle='#E88F9A';x.beginPath();x.moveTo(58,84);x.lineTo(70,84);x.lineTo(64,92);x.fill();x.strokeStyle='#2b1d14';x.lineWidth=4;x.beginPath();x.moveTo(64,92);x.quadraticCurveTo(56,104,48,98);x.moveTo(64,92);x.quadraticCurveTo(72,104,80,98);x.stroke();
+ if(st.blush){x.fillStyle='rgba(240,120,130,.45)';[22,106].forEach(a=>{x.beginPath();x.ellipse(a,84,10,6,0,0,7);x.fill()})}x.restore()}
+function faceTex(st){const k=st.eye+st.pat+st.blush;if(!FT[k]){const c=document.createElement('canvas');c.width=c.height=128;drawFace(c.getContext('2d'),st,1);FT[k]=new T.CanvasTexture(c)}return FT[k]}
+function person(st,sc2,apron){const g=new T.Group(),f=st.fur,m=(geo,c,x,y,z)=>{const o=new T.Mesh(geo,new T.MeshLambertMaterial({color:c}));o.position.set(x,y,z);g.add(o);return o};
+ m(new T.CylinderGeometry(.4,.46,1,10),f,0,.9,0);m(new T.SphereGeometry(.42,12,10),f,0,1.75,0).scale.z=.85;const eg=[new T.ConeGeometry(.13,.3,4),new T.ConeGeometry(.19,.22,4),new T.SphereGeometry(.15,8,6)][st.ear];m(eg,f,-.24,2.12,0);m(eg,f,.24,2.12,0);
+ const fp=new T.Mesh(new T.PlaneGeometry(.6,.6),new T.MeshBasicMaterial({map:faceTex(st),transparent:true}));fp.position.set(0,1.75,.4);g.add(fp);
+ const tl=[.9,.5,1.3][st.tail];m(new T.CylinderGeometry(.07,.07,tl,6),f,0,.6+tl*.3,-.55).rotation.x=.9;m(new T.TorusGeometry(.34,.07,6,12),sc2,0,1.4,0).rotation.x=Math.PI/2;if(apron)m(new T.BoxGeometry(.55,.7,.06),0xF3DE8C,0,.85,.44);return g}
+// 머리 위 말풍선/말걸기 표시(💬) 스프라이트
+function mkBub(g,t){const c=document.createElement('canvas');c.width=512;c.height=96;const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),transparent:true,depthTest:false}));sp.scale.set(6,1.125,1);sp.position.y=3;sp.renderOrder=5;g.add(sp);g.bub=sp;g.bc=c;g.idle=t;setBub(g,t,1)}
+function setBub(g,t,keep){const c=g.bc,x=c.getContext('2d');x.clearRect(0,0,512,96);g.bub.visible=!!t;clearTimeout(g.bt);if(!t)return;x.font='bold 30px sans-serif';const w=Math.min(500,x.measureText(t).width+40);x.fillStyle='rgba(255,248,232,.96)';x.beginPath();(x.roundRect||x.rect).call(x,256-w/2,10,w,64,28);x.fill();x.fillStyle='#3B2A1A';x.textAlign='center';x.fillText(t,256,53,470);g.bub.material.map.needsUpdate=true;if(!keep)g.bt=setTimeout(()=>setBub(g,g.idle),4500)}
+function lab(s){const c=document.createElement('canvas');c.width=512;c.height=112;const x=c.getContext('2d'),f=stat(s);x.fillStyle='rgba(255,248,232,.96)';x.beginPath();(x.roundRect||x.rect).call(x,4,4,504,100,40);x.fill();x.font='bold 40px sans-serif';x.textAlign='center';x.fillStyle='#3B2A1A';x.fillText(f.e+' '+s.n,256,72);
+ if(s.sp){s.g.remove(s.sp);s.sp.material.map.dispose()}s.sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),transparent:true,opacity:f.old?.6:1,depthTest:false}));s.sp.scale.set(8,1.75,1);s.sp.position.y=4.95;s.sp.renderOrder=1;s.g.add(s.sp);s.keeper.visible=!f.old&&f.k!='absent';s.glow.material.opacity={hot:.35,warm:.22,weak:.08}[f.k]||0;s.glow.visible=s.glow.material.opacity>0;s.steam.forEach(o=>o.visible=!f.old&&f.k!='absent')}
+const slot=(s,i)=>({x:s.x+2.4+i*1.05,z:s.z+1.7});
+const SHOPC=[0xD9533B,0x2F8F5B,0x3A78C8,0xE0A030,0x8E5BB5,0xE06A9A,0x2AA6A6,0xE87D2B];
+function stall(s){if(s.g){world.remove(s.g);(s.npc||[]).forEach(n=>world.remove(n))}const g=new T.Group(),b=(w,h,d,c,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshLambertMaterial({color:c}));o.position.set(x,y,z);g.add(o);return o};
+ b(2.6,1.1,1.3,0x8a5a34,0,.55,0);const ci0=Math.max(0,spots.indexOf(s))%SHOPC.length;s.roof=b(3.2,.18,1.9,SHOPC[ci0],0,2.4,0);b(.12,1.3,.12,0x5b3a20,-1.4,1.7,.8);b(.12,1.3,.12,0x5b3a20,1.4,1.7,.8);
+ const l=new T.Mesh(new T.SphereGeometry(.22,10,8),new T.MeshBasicMaterial({color:0xFFD27A}));l.position.set(0,2.1,.9);g.add(l);const k=person({fur:0xF2EEE6,eye:'line',ear:0,pat:0,blush:true,tail:0},SHOPC[ci0],1);k.position.set(0,0,-.9);g.add(k);s.keeper=k;mkBub(k,'🍳 사장냥');k.bub.position.y=3.35;
+ const wh=new T.MeshLambertMaterial({color:0xffffff}),hb=new T.Mesh(new T.CylinderGeometry(.33,.35,.3,12),wh);hb.position.y=2.3;k.add(hb);const hp=new T.Mesh(new T.SphereGeometry(.42,12,8),wh);hp.scale.y=.75;hp.position.y=2.68;k.add(hp);
+ const arm=sx=>{const pv=new T.Group();pv.position.set(sx*.46,1.35,.05);const a=new T.Mesh(new T.CylinderGeometry(.09,.09,.7,8),wh);a.position.y=-.35;pv.add(a);const pw=new T.Mesh(new T.SphereGeometry(.12,8,6),new T.MeshLambertMaterial({color:0xF2EEE6}));pw.position.y=-.72;pv.add(pw);k.add(pv);return pv};s.armL=arm(-1);s.armR=arm(1);
+ b(2.4,.08,.9,0x2c2c30,0,1.14,.15);
+ s.buns=[-.75,0,.75].map(x=>{const o=new T.Group(),bm2=new T.MeshLambertMaterial({color:0xD9A04A}),bd=new T.Mesh(new T.SphereGeometry(.2,8,6),bm2);bd.scale.set(1.5,.55,.8);o.add(bd);const tl=new T.Mesh(new T.ConeGeometry(.14,.28,4),bm2);tl.rotation.z=Math.PI/2;tl.position.x=-.38;o.add(tl);o.position.set(x,1.3,.15);g.add(o);return o});s.glow=new T.Mesh(new T.CircleGeometry(4.5,24),new T.MeshBasicMaterial({color:0xFFB347,transparent:true,opacity:.2,depthWrite:false}));s.glow.rotation.x=-Math.PI/2;s.glow.position.y=.05;g.add(s.glow);s.steam=[0,1,2].map(()=>{const o=new T.Mesh(new T.SphereGeometry(.18,6,5),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.4}));g.add(o);return o});g.position.set(s.x,0,s.z);s.g=g;world.add(g);s.log=[];lab(s);
+ s.npc=[];for(let i=0;i<8;i++){const n=person((st=>(i%3==1&&(st.eye='line'),st.fur=FURS[(Math.abs(hs(s.n))+i*3)%FURS.length],st))(catStyle(hs(s.n)*3+i)),SCARF[(Math.abs(hs(s.n))+i*5)%SCARF.length]);n.rotation.y=-Math.PI/2;mkBub(n,'💬');const p=slot(s,i),jz=(Math.max(0,spots.indexOf(s))%7)*.035;n.position.set(p.x,0,p.z+jz);n.visible=false;world.add(n);s.npc.push(n)}}
+const rg=seed=>{let s=Math.abs(seed)%2147483646+1;return()=>(s=s*16807%2147483647)/2147483647};
+function build(seed){if(world)sc.remove(world);world=new T.Group();sc.add(world);const r=rg(seed);inQ=null;autoT=null;P.x=0;P.z=0;
+ const box=(w,h,d,c,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshLambertMaterial({color:c}));o.position.set(x,y,z);world.add(o)};
+ box(700,.1,700,0xE9EFF3,0,-.06,0);box(700,.12,8,0x5a636b,0,0,0);box(8,.12,700,0x5a636b,0,0,0);
+ const nm=[area+' 3번 출구 앞','OO마트 앞','공원 입구','OO대학교 정문','편의점 옆','버스정류장 앞'],ts=[.4,5,80,300,30,2],ms=[['팥','슈크림'],['팥'],['슈크림'],['팥','슈크림'],['팥'],['슈크림']];spots=[];
+ for(let i=0;i<6;i++){const d=20+r()*90,sg=r()<.5?-1:1,e=r()<.5?-6.5:6.5,al=i%2;const s={n:nm[i],x:al?e:sg*d,z:al?sg*d:e,t:hr(ts[i]),ev:Array.from({length:[3,2,1,1,2,1][i]},(_,k)=>({t:hr(ts[i])-k*6e5,st:'seen',sid:'x'+k})).concat(i==1?[{t:Date.now()-5e5,st:'not_seen',sid:'y'}]:[]),w:[14,9,2,0,6,3][i],menu:ms[i],p:i%3==2?'':'3개 2,000원',pat:i==0?'월·수·금 16:30~20:30':null,q:Math.floor(r()*8)};spots.push(s);stall(s)}
+ const keep=[],far=(x,z,d)=>spots.every(s=>Math.hypot(s.x-x,s.z-z)>d)&&keep.every(k=>Math.hypot(k.x-x,k.z-z)>d*.5+k.r);
+ const mat=c=>new T.MeshLambertMaterial({color:c}),bm=c=>new T.MeshBasicMaterial({color:c}),M={snow:mat(0xffffff),pine:mat(0x2f6b4f),pine2:mat(0x3f8460),wood:mat(0x6b4a2b),warm:bm(0xFFD27A),red:bm(0xE0443A),blue:bm(0x5AA9FF),star:bm(0xFFE066),win:bm(0xFFD98A)},
+ add=(geo,m,x,y,z)=>{const o=new T.Mesh(geo,m);o.position.set(x,y,z);world.add(o);return o},
+ G={c1:new T.ConeGeometry(1.7,3,8),c2:new T.ConeGeometry(1.2,2.4,8),cap:new T.ConeGeometry(.5,.9,8),b:new T.SphereGeometry(.14,6,5),st:new T.SphereGeometry(.28,6,5),lamp:new T.CylinderGeometry(.07,.09,3.6,6),bulb:new T.SphereGeometry(.28,8,6),win:new T.BoxGeometry(1.2,1.2,.1),sn:new T.SphereGeometry(.7,8,6),gift:new T.BoxGeometry(.7,.6,.7)};
+ // 트리: 눈 덮인 전나무, orn=true면 별과 전구 장식
+ const tree=(x,z,k,o)=>{add(G.c1,M.pine,x,1.5*k,z).scale.setScalar(k);add(G.c2,M.pine2,x,3.4*k,z).scale.setScalar(k);add(G.cap,M.snow,x,4.4*k,z).scale.setScalar(k);
+  if(o){add(G.st,M.star,x,5.1*k,z).scale.setScalar(k);for(let j=0;j<14;j++){const a=j*2.4,rr=(1.45-j*.09)*k;add(G.b,[M.red,M.warm,M.blue][j%3],x+Math.cos(a)*rr,(.6+j*.28)*k,z+Math.sin(a)*rr)}}},
+ lamp=(x,z)=>{add(G.lamp,M.wood,x,1.8,z);add(G.bulb,M.warm,x,3.8,z)};
+ const bx=(c,w,h,d,x,y,z,b)=>add(new T.BoxGeometry(w,h,d),b?bm(c):mat(c),x,y,z),cy=(c,a,h,x,y,z)=>add(new T.CylinderGeometry(a,a,h,8),mat(c),x,y,z);
+ // mapObjects 프리셋: 구역(주택가/상가/역/공원)을 데이터로 정의 → 4개 구역을 시드 순서로 배치
+ const OB={bench:(x,z)=>{bx(0x8a5a34,1.8,.15,.6,x,.5,z);bx(0x8a5a34,1.8,.6,.1,x,.9,z-.3)},mail:(x,z)=>bx(0xD03A2F,.5,1,.5,x,.5,z),vend:(x,z)=>{bx(0x3A78C8,.9,1.8,.7,x,.9,z);bx(0xFFE9A8,.6,.9,.05,x,1.1,z+.36,1)},bin:(x,z)=>cy(0x4d7a5a,.3,.7,x,.35,z),
+  pot:(x,z)=>{cy(0xB5683A,.3,.5,x,.25,z);add(G.b,M.pine2,x,.7,z).scale.setScalar(2)},snow:(x,z)=>add(G.sn,M.snow,x,.2,z).scale.set(1.4,.4,1.4),pole:(x,z)=>{cy(0x6b4a2b,.12,7,x,3.5,z);bx(0x6b4a2b,2,.12,.12,x,6.6,z)},lamp:(x,z)=>lamp(x,z),fence:(x,z)=>bx(0xc9b08a,6,.7,.1,x,.35,z),
+  house:(x,z)=>{bx(0xd9c7a5,3.6,2.6,3.6,x,1.3,z);add(new T.ConeGeometry(3,1.5,4),mat(0x9a5a3c),x,3.3,z).rotation.y=Math.PI/4;bx(0xFFD98A,.9,.9,.05,x,1.5,z+1.82,1)},
+  shop:(x,z)=>{bx(0xc9b8a8,5,3,4,x,1.5,z);bx([0xD9533B,0x2F6F5E,0xD98A2B][Math.abs(x|0)%3],5.2,.3,1.2,x,3.1,z+2.4);bx(0xFFE9A8,3,1.2,.05,x,1.4,z+2.03,1)},
+  gate:(x,z)=>{bx(0x6b7a8a,.6,3.4,.6,x-2,1.7,z);bx(0x6b7a8a,.6,3.4,.6,x+2,1.7,z);bx(0x2F8F5B,4.8,.9,.4,x,3.6,z,1)},bus:(x,z)=>{bx(0x6b7a8a,.1,2.4,.1,x-1.3,1.2,z);bx(0x6b7a8a,.1,2.4,.1,x+1.3,1.2,z);bx(0x4a90c8,3,.15,1.4,x,2.4,z);OB.bench(x,z)},
+  fountain:(x,z)=>{cy(0xcfd8dd,2.2,.5,x,.25,z);cy(0x7fb8d8,1.9,.12,x,.5,z);cy(0xcfd8dd,.3,1.6,x,1.1,z)},statue:(x,z)=>{bx(0xb8b2a6,1.1,.8,1.1,x,.4,z);cy(0xb8b2a6,.45,1,x,1.3,z);add(G.st,mat(0xb8b2a6),x,2.1,z).scale.setScalar(1.5);bx(0xb8b2a6,.15,.35,.1,x-.3,2.5,z);bx(0xb8b2a6,.15,.35,.1,x+.3,2.5,z)},
+  ginkgo:(x,z)=>{cy(0x6b4a2b,.3,3,x,1.5,z);add(G.sn,mat(0xE5B83A),x,4.2,z).scale.setScalar(2.6);add(new T.CircleGeometry(3.6,16),new T.MeshBasicMaterial({color:0xE5B83A,transparent:true,opacity:.35}),x,.04,z).rotation.x=-Math.PI/2},
+  cross:(x,z,r)=>{for(let k=-3;k<=3;k++)bx(0xf4f1e8,r?.6:3,.03,r?3:.6,r?x+k*1.1:x,.08,r?z:z+k*1.1)}},
+ ZONES={residential:[['house',-6,-4],['house',6,-6],['house',1,6],['fence',-3,0],['pot',-2,-1],['pole',9,0],['bin',4,-1],['statue',-9,8]],commercial:[['shop',-7,-4],['shop',2,-6],['shop',9,-3],['vend',-2,2],['bench',5,3],['lamp',-4,6]],station:[['gate',0,-6],['bus',-8,2],['bin',-3,0],['bench',4,2],['mail',8,-2]],park:[['ginkgo',0,0],['fountain',-8,-4],['bench',-4,5],['bench',5,4],['pot',6,-3],['snow',-6,6]]},zn=Object.keys(ZONES).sort(()=>r()-.5);
+ [[30,30],[-30,30],[30,-30],[-30,-30]].forEach(([ax,az],k)=>{keep.push({x:ax,z:az,r:14});ZONES[zn[k]].forEach(([t,x,z])=>OB[t](ax+x,az+z))});[[-8,0,0],[8,0,0],[0,-8,1],[0,8,1]].forEach(([x,z,q])=>OB.cross(x,z,q));
+ tree(11,-11,2,1);[[9,-9.4,0xD9433A],[10.2,-8.5,0x2F8F5B],[8.4,-8.4,0x4A8FE0]].forEach(([x,z,c])=>add(G.gift,mat(c),x,.3,z));
+ [[-10,-10],[-11,10],[10,10]].forEach(([x,z])=>{add(G.sn,M.snow,x,.7,z);add(G.sn,M.snow,x,1.75,z).scale.setScalar(.65)});
+ for(let d=-150;d<=150;d+=24){if(Math.abs(d)<10)continue;[[d,5.4],[d,-5.4],[5.4,d],[-5.4,d]].forEach(([x,z])=>far(x,z,3.5)&&lamp(x,z))}
+ for(let d=-150;d<=150;d+=26){if(Math.abs(d)<12)continue;[[d,11],[d,-11],[11,d],[-11,d]].forEach(([x,z])=>far(x,z,6)&&tree(x,z,1))}
+ for(let i=0;i<46;i++){const w=6+r()*7,h=6+r()*12,d=6+r()*6,x=(r()-.5)*380,z=(r()-.5)*380;if(Math.abs(x)<14+w/2||Math.abs(z)<14+d/2||!far(x,z,16+w/2))continue;box(w,h,d,[0xC9B8A8,0x9fb0bd,0xd9c7a5,0xb4a3a0][i%4],x,h/2,z);box(w+.4,.5,d+.4,0xffffff,x,h+.25,z);for(let k=0;k<2;k++)add(G.win,M.win,x+(k?w*.22:-w*.22),h*.55,z+d/2+.06)}
+ for(let i=0;i<40;i++){const x=(r()-.5)*380,z=(r()-.5)*380;if(Math.abs(x)<18||Math.abs(z)<18||!far(x,z,8))continue;tree(x,z,1)}}
+const say=t=>{const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(say.k);say.k=setTimeout(()=>e.style.display='none',2600)};
+addEventListener('keydown',e=>{if(e.target.tagName!='INPUT')K[e.key.toLowerCase()]=1});addEventListener('keyup',e=>K[e.key.toLowerCase()]=0);
+const jy=$('joy'),kn=$('knob');function jm(e){const r=jy.getBoundingClientRect();let x=e.clientX-r.left-55,y=e.clientY-r.top-55,l=Math.hypot(x,y)||1,k=Math.min(l,40);joy={x:x/l*k/40,y:y/l*k/40};kn.style.transform=`translate(${x/l*k}px,${y/l*k}px)`}
+jy.addEventListener('pointerdown',e=>{jy.setPointerCapture(e.pointerId);jm(e)});jy.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType=='touch')jm(e)});
+['pointerup','pointercancel'].forEach(n=>jy.addEventListener(n,()=>{joy={x:0,y:0};kn.style.transform=''}));
+let dr=null;$('c').addEventListener('pointerdown',e=>dr=e.clientX);addEventListener('pointermove',e=>{if(dr!=null&&e.target.id=='c'){yaw-=(e.clientX-dr)*.006;dr=e.clientX}});addEventListener('pointerup',()=>dr=null);
+function loop(){requestAnimationFrame(loop);if(!running||!world)return;const dt=Math.min(.05,clock.getDelta());
+ let vx=(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0)+joy.x,vy=(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0)+joy.y;if(K.q)yaw+=dt*1.8;if(K.e)yaw-=dt*1.8;const l=Math.hypot(vx,vy);P.mov=l>.15;
+ if(P.mov){autoT=null;leaveQ();vx/=Math.max(1,l);vy/=Math.max(1,l);const mx=Math.sin(yaw)*vy+Math.cos(yaw)*vx,mz=Math.cos(yaw)*vy-Math.sin(yaw)*vx;
+  P.x=Math.max(-250,Math.min(250,P.x+mx*6*dt));P.z=Math.max(-250,Math.min(250,P.z+mz*6*dt));pl.rotation.y=Math.atan2(mx,mz)}
+ else if(autoT&&!inQ){const dx=autoT.x-P.x,dz=autoT.z-P.z,d=Math.hypot(dx,dz);if(d<.4)autoT=null;else{P.x+=dx/d*5*dt;P.z+=dz/d*5*dt;pl.rotation.y=Math.atan2(dx,dz);P.mov=1}}
+ near=null;let nd=1e9,ns=null;for(const s of spots){const d=Math.hypot(s.x-P.x,s.z-P.z);if(d<nd){nd=d;ns=s}if(d<7)near=s;
+  // 줄 맨 끝 자리 근처에 멈춰 서면 온라인 줄에 합류
+  if(!inQ&&!P.mov){const e=slot(s,Math.min(s.q,8));if(Math.hypot(e.x-P.x,e.z-P.z)<1.3){inQ=s;s.q++;say('줄을 섰어요! 🧍 줄 대화방에도 들어왔어요');addLog(s,'🔔',nick+'님이 줄에 섰어요');if(chatSpot===s)openChat(s);{const ss=s,ii=spots.indexOf(s);if(!LIVE.on)setTimeout(()=>{if(inQ===ss)addLog(ss,NAMES[(ii*3)%8],'어서와요! 같이 기다려요 🐟')},1500)}}}}
+ if(inQ){const e=slot(inQ,Math.min(inQ.q-1,8));P.x=e.x;P.z=e.z;pl.rotation.y=yaw}
+ for(const s of spots){s.npc.forEach((n,i)=>{n.visible=i<Math.min(s.q,8)&&!(s===inQ&&i==s.q-1);if(n.visible)n.rotation.y=Math.atan2(cam.position.x-n.position.x,cam.position.z-n.position.z)});s.keeper.rotation.y=Math.atan2(cam.position.x-s.x,cam.position.z-s.z)}
+ const tt=Date.now()/1000;if(placing){if(!placing.pinned){placing.x=P.x-Math.sin(yaw)*4;placing.z=P.z-Math.cos(yaw)*4}ghost.position.set(placing.x,0,placing.z);ghost.scale.setScalar(1+Math.sin(tt*4)*.04)}spots.forEach((s,i)=>{s.keeper.rotation.z=Math.sin(tt*3+i)*.08;s.buns.forEach((b,j)=>{const ph=(tt*.8+j/3+i*.2)%1;if(ph<.3){b.position.y=1.3+Math.sin(ph/.3*Math.PI)*.55;b.rotation.x=ph/.3*Math.PI*2}else{b.position.y=1.3;b.rotation.x=0}});s.armL.rotation.x=-1.25+Math.sin(tt*6+i)*.35;s.armR.rotation.x=-1.25+Math.sin(tt*6+i+Math.PI)*.35;s.steam.forEach((o,j)=>{const ph=(tt*.4+j/3)%1;o.position.set((j-1)*.7,1.6+ph*1.5,.2);o.material.opacity=(1-ph)*.4;o.scale.setScalar(.7+ph)})});stepSnd(dt);pl.position.set(P.x,P.mov?Math.abs(Math.sin(Date.now()/90))*.12:0,P.z);cam.position.set(P.x+Math.sin(yaw)*7,4.4,P.z+Math.cos(yaw)*7);cam.lookAt(P.x,1.3,P.z);
+ const v=new T.Vector3(P.x,2.5,P.z).project(cam);$('tag').style.left=(v.x*.5+.5)*innerWidth+'px';$('tag').style.top=(-v.y*.5+.5)*innerHeight+'px';
+ if(ns){const dx=ns.x-P.x,dz=ns.z-P.z,f=-(Math.sin(yaw)*dx+Math.cos(yaw)*dz),rr=Math.cos(yaw)*dx-Math.sin(yaw)*dz;$('arr').style.transform=`rotate(${Math.atan2(rr,f)}rad)`;$('dist').textContent=Math.round(nd)+'m'}
+ const p=snow.geometry.attributes.position;for(let i=0;i<500;i++){let y=p.getY(i)-dt*2;if(y<0){y=18;p.setX(i,P.x+(Math.random()-.5)*60);p.setZ(i,P.z+(Math.random()-.5)*60)}p.setY(i,y)}p.needsUpdate=true;ren.render(sc,cam)}
+const nearest=()=>spots.slice().sort((a,b)=>Math.hypot(a.x-P.x,a.z-P.z)-Math.hypot(b.x-P.x,b.z-P.z))[0];
+$('b1').onclick=()=>{if(near)return show(near);const s=nearest();autoT={x:s.x+1.5,z:s.z+3.4};say('가장 가까운 붕어로 걸어가는 중…')};
+$('b2').onclick=()=>near?seen(spots.indexOf(near),1):say('붕어 포장마차 가까이에서 눌러주세요');
+$('b3').onclick=()=>{const s=near||nearest(),e=slot(s,Math.min(s.q,8));autoT={x:e.x,z:e.z};say('줄 끝으로 걸어가는 중… 도착하면 자동으로 줄을 서요')};
+// 새 가게 위치 정하기: 반투명 가게가 내 앞에 떠서 걸어 옮기거나, 지도에서 눌러 지정 → 확정 시 그 자리에 생성
+let placing=null,ghost=null,mext=40;
+function startPlace(){closeBub();placing={x:P.x-Math.sin(yaw)*4,z:P.z-Math.cos(yaw)*4,pinned:false};if(!ghost){ghost=new T.Group();const m=(g,c,x,y,z)=>{const o=new T.Mesh(g,new T.MeshBasicMaterial({color:c,transparent:true,opacity:.6,side:2}));o.position.set(x,y,z);ghost.add(o);return o};m(new T.BoxGeometry(2.6,1.1,1.3),0x8a5a34,0,.55,0);m(new T.BoxGeometry(3.2,.18,1.9),0xD9533B,0,2.4,0);m(new T.RingGeometry(2.2,2.6,24),0xFFD27A,0,.06,0).rotation.x=-Math.PI/2;sc.add(ghost)}ghost.visible=true;$('pbar').style.display='block';say('걸어서 위치를 맞춰보세요')}
+function endPlace(){placing=null;if(ghost)ghost.visible=false;$('pbar').style.display='none'}
+function confirmPlace(){if(!placing)return;const d=spots.find(s=>Math.hypot(s.x-placing.x,s.z-placing.z)<30);if(d)return bub(`<b>혹시 이 붕어인가요?</b><div class="box">🐟 ${esc(d.n)}</div><div class="g"><button class="b p" data-x="seen" data-bar="1" data-i="${spots.indexOf(d)}">맞아요, 여기예요</button><button class="b" data-x="form">아니에요, 다른 붕어예요</button></div>`);form()}
+function pinMap(e){const r=$('mbox').getBoundingClientRect();placing.x=((e.clientX-r.left)/r.width-.5)*2*mext;placing.z=((e.clientY-r.top)/r.height-.5)*2*mext;placing.pinned=true;openMap();$('mcard').innerHTML='<b>📍 여기에 놓을까요?</b><div class="g"><button class="b" data-g="repin">다시 고르기</button><button class="b p" data-g="place">여기에 가게 놓기</button></div>'}
+$('b4').onclick=openPicker;$('pc').onclick=endPlace;$('pm').onclick=openMap;$('po').onclick=confirmPlace;
+$('b5').onclick=()=>{const s=inQ||near;s?openChat(s):say('붕어 포장마차 가까이에서 눌러주세요')};
+// 말풍선 안 버튼은 inline onclick 대신 이벤트 위임 사용(이름 충돌 방지)
+$('bub').addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;const i=+b.dataset.i,x=b.dataset.x;
+ if(x=='close')closeBub();else if(x=='seen')seen(i,b.dataset.bar);else if(x=='none')mark(i,'not_seen');else if(x=='form'||x=='r2')r2();else if(x=='skipphoto'||x=='r3')form();else if(x=='mn'){const v=b.dataset.v,a=reg.menus;reg.menus=a.includes(v)?a.filter(y=>y!=v):[...a,v];form()}else if(x=='fav'){const k=area+'|'+spots[i].n;favs=favs.includes(k)?favs.filter(y=>y!=k):[...favs,k];try{localStorage.setItem('bz_fav',JSON.stringify(favs))}catch(e){}show(spots[i])}else if(x=='save')save();else if(x=='chat')openChat(spots[i]);else if(x=='send')sendChat();else if(x=='goq'){const sp=spots[i],e=slot(sp,Math.min(sp.q,8));closeBub();autoT={x:e.x,z:e.z};say('줄 끝으로 걸어가는 중… 도착하면 대화에 참여할 수 있어요')}else if(x=='nicksave'){const n=$('nk2').value.trim();if(!okNick(n))return $('m').textContent=NMSG;setNick(n);closeBub();say('닉네임을 바꿨어요: '+n)}});
+$('bub').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='ci')sendChat()});
+function bub(h){const b=$('bub');chatSpot=null;b.innerHTML='<span class="tag">붕세권</span>'+h;b.style.display='block'}function closeBub(){$('bub').style.display='none';chatSpot=null}
+const MI={팥:'🫘',슈크림:'💛',피자:'🍕',치즈:'🧀',고구마:'🍠',기타:'🥞'};
+// 상태 계산: 가장 최근 제보 우선(🌙 없어요가 더 최신이면 🌙). 🔥는 "최근 목격"이지 영업 보장이 아님
+function stat(s){const now=Date.now(),ev=s.ev||[],last=Math.max(s.t,...ev.filter(e=>e.st=='seen').map(e=>e.t)),ln=Math.max(0,...ev.filter(e=>e.st=='not_seen'&&now-e.t<36e5).map(e=>e.t)),conf=ev.filter(e=>e.st=='seen'&&now-e.t<108e5).length,m=(now-last)/6e4,b={lastT:last,conf};
+ if(ln>last)return{...b,k:'absent',e:'🌙',c:0x6b7a94,old:0,sub:ago(ln)+' 제보'};if(m<30)return{...b,k:'hot',e:'🔥',c:0xC8412F,old:0};if(m<120)return{...b,k:'warm',e:'🔥',c:0xD9533B,old:0};if(m<1440)return{...b,k:'weak',e:'🔥',c:0xD9853B,old:0};if(m<10080)return{...b,k:'recent',e:'🐟',c:0xD98A2B,old:0};return{...b,k:'old',e:'🌫️',c:0x9aa0a6,old:1}}
+let favs=[];try{favs=JSON.parse(localStorage.getItem('bz_fav')||'[]')}catch(e){}// 서버 연결 후: 저장한 가게가 목격되면 알림
+function show(s){const f=stat(s),i=spots.indexOf(s),fv=favs.includes(area+'|'+s.n),td=(s.ev||[]).filter(e=>e.st=='seen'&&Date.now()-e.t<864e5).length;
+ const line=f.k=='absent'?`<b style="color:#5b6b85">🌙 지금은 없을 수도 있어요</b> <small>· ${f.sub}</small>`:`<b style="color:var(--azu)">${f.e} ${ago(f.lastT)} 목격</b> <span class="chip ${f.conf>=3?'cf':''}">${f.conf>=3?'👥 ':''}${f.conf}명 확인</span>`;
+ bub(`<div style="display:flex;justify-content:space-between;gap:6px"><b style="font-size:18px">🐟 ${esc(s.n)}</b><span style="white-space:nowrap"><button class="b" data-x="fav" data-i="${i}" aria-label="저장">${fv?'★':'☆'}</button> <button class="b" data-x="close" aria-label="닫기">✕</button></span></div><p style="margin:6px 0">${line}</p>
+${s.photo&&/^(data:image\/|https:)/.test(s.photo)?`<img src="${esc(s.photo)}" alt="최근 사진" style="width:100%;max-height:150px;object-fit:cover;border-radius:12px">`:''}${s.addr||s.land?`<div style="margin-top:6px">📍 ${esc(s.land||s.addr)}</div>`:''}
+${s.menu&&s.menu.length?`<div>${s.menu.map(m=>(MI[m]||'🥞')+' '+m).join(' · ')}${s.p?' · '+esc(s.p):''}</div>`:s.p?`<div>${esc(s.p)}</div>`:''}${td?`<div class="box">👀 오늘 ${td}명이 확인했어요</div>`:''}${s.q?`<div class="box">🧍 온라인으로 ${s.q}명이 줄 서 있어요<br><small>실제 현장 대기 인원과는 달라요.</small></div>`:''}${s.pat?`<div class="box">이 붕어는 주로 ${s.pat}에 자주 보여요.</div>`:''}
+<div class="g"><button class="b p" data-x="seen" data-i="${i}">🔥 봤어요</button><button class="b" data-x="none" data-i="${i}">🌙 지금은 없어요</button></div><div id="m" role="status"></div><button class="b" style="width:100%" data-x="chat" data-i="${i}">💬 줄 대화방 보기</button><small style="display:block;margin-top:8px;opacity:.7">최근 목격 정보는 사용자 제보를 기반으로 해요.</small>`)}
+// 봤어요/없어요 기록: 같은 세션은 한 가게에 30분 1회. 서버 연결 시 sightings 테이블 insert로 교체
+function mark(i,st,bar){const s=spots[i];if(s.last&&Date.now()-s.last<18e5){bar?say('같은 가게는 30분에 한 번만 남길 수 있어요'):$('m').textContent='같은 가게는 30분에 한 번만 남길 수 있어요.';return}
+ s.last=Date.now();(s.ev=s.ev||[]).push({t:s.last,st,sid:'me'});if(st=='seen'){s.t=s.last;s.w++}lab(s);persist();const msg=st=='seen'?'🔥 목격 완료! 고마워요':'🌙 알려줘서 고마워요';if(bar){closeBub();say(msg)}else{show(s);$('m').textContent=msg}}
+const seen=(i,bar)=>mark(i,'seen',bar);
+// 사진 업로드 모듈: 지금은 미리보기용 압축 dataURL. 나중에 supabase.storage.from('shop-photos').upload() 후 public URL 반환하도록 교체
+const Photos={upload:f=>new Promise(r=>{const im=new Image();im.onload=()=>{const k=Math.min(1,600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.7))};im.onerror=()=>r(null);im.src=URL.createObjectURL(f)})};
+const llOf=(x,z)=>({lat:LL.lat-z/111000,lng:LL.lng+x/(111000*Math.cos(LL.lat*Math.PI/180))});
+const addrText=(x,z)=>{const l=llOf(x,z);return area+' 부근 (위도 '+l.lat.toFixed(5)+', 경도 '+l.lng.toFixed(5)+')'};
+async function reverseGeocode(lat,lng){return null}// TODO: 카카오 coord2Address 또는 Nominatim 연결 (키 필요 시 환경변수)
+let reg=null;
+function regStart(x,z){reg={x,z,photo:null,menus:[],price:'',land:'',ll:llOf(x,z)};const d=spots.find(k=>Math.hypot(k.x-x,k.z-z)<30);if(d)return bub(`<b>혹시 이 붕어인가요?</b><div class="box">🐟 ${esc(d.n)}</div><div class="g"><button class="b p" data-x="seen" data-bar="1" data-i="${spots.indexOf(d)}">맞아요, 여기예요</button><button class="b" data-x="r2">아니에요, 다른 붕어예요</button></div>`);r2()}
+function r2(){if(LIVE.on&&!LIVE.photos)return form();bub(`<b>붕어빵을 발견했어요! 🐟</b><p style="margin:6px 0">다른 사람도 이 붕어빵을 쉽게 찾을 수 있게 지금 모습을 사진으로 남겨주세요.</p><small>사람의 얼굴이나 차량 번호판 등 개인정보가 사진에 나오지 않도록 해주세요.</small>${reg.photo?`<img src="${reg.photo}" alt="미리보기" style="width:100%;max-height:150px;object-fit:cover;border-radius:12px;margin-top:8px">`:''}
+<div class="g"><label class="b p" style="text-align:center">📷 지금 사진 찍기<input type="file" accept="image/*" capture="environment" style="display:none"></label><label class="b" style="text-align:center">앨범에서 선택<input type="file" accept="image/*" style="display:none"></label></div>${reg.photo?'<button class="b p" style="width:100%" data-x="r3">다음</button>':''}<button class="b" style="width:100%;margin-top:6px;font-size:12px;background:none;opacity:.7" data-x="skipphoto">사진 없이 계속하기</button>`)}
+$('bub').addEventListener('change',async e=>{if(e.target.type=='file'&&e.target.files[0]&&reg){say('사진을 불러오는 중…');const u=await Photos.upload(e.target.files[0]);if(u)reg.photo=u;else say('사진을 불러오지 못했어요');r2()}});
+function form(){reg.price=$('pr')?$('pr').value:reg.price;reg.land=$('ld')?$('ld').value:reg.land;bub(`<b>어떤 붕어빵이 있었나요?</b> <small>모르면 건너뛰어도 돼요</small><div class="chips" style="flex-wrap:wrap">${Object.keys(MI).map(m=>`<button class="${reg.menus.includes(m)?'on':''}" data-x="mn" data-v="${m}" aria-pressed="${reg.menus.includes(m)}" style="flex:0 0 30%">${MI[m]} ${m}</button>`).join('')}</div><input id="pr" maxlength="20" placeholder="가격 (선택) 예: 3개 / 2,000원" aria-label="가격"><input id="ld" maxlength="40" placeholder="찾기 쉽게 설명해주세요 (예: 판교역 1번 출구 올리브영 옆)" aria-label="위치 설명"><div class="g"><button class="b" data-x="close">취소</button><button class="b p" data-x="save">등록하기</button></div>`);$('pr').value=reg.price;$('ld').value=reg.land}
+let disc=+(localStorage.getItem('bz_disc')||0);
+function save(){if(!reg)return closeBub();reg.price=$('pr')?$('pr').value.trim():reg.price;reg.land=$('ld')?$('ld').value.trim():reg.land;const now=Date.now(),s={n:reg.land||area+' 붕어빵',x:reg.x,z:reg.z,t:now,w:1,menu:reg.menus,p:reg.price,q:0,ev:[{t:now,st:'seen',sid:'me'}],photo:reg.photo,addr:addrText(reg.x,reg.z),land:reg.land,ll:reg.ll};
+ spots.push(s);stall(s);s.user=true;persist();disc++;try{localStorage.setItem('bz_disc',disc)}catch(e){}reg=null;$('area').textContent=areaTxt();
+ bub(`<div style="text-align:center"><div style="font-size:44px">🐟🔥</div><h3 style="margin:4px 0">새 붕어빵 발견!</h3><p>이제 동네 사람들도 이 붕어빵을 찾을 수 있어요.</p><b style="color:var(--bun)">+1 발견 · 총 ${disc}곳</b><button class="b p" style="width:100%;margin-top:10px" data-x="close">월드로 돌아가기</button></div>`)}
+// ---- 줄 선 사람들과 대화 (데모: 대화 상대는 가짜, 실제는 Supabase Realtime broadcast로 교체) ----
+const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),NAMES=['호떡냥','팥냥이','슈크림냥','붕어덕후','겨울냥','치즈냥','먹보냥','솜뭉치'],LINES=['지금 슈크림 나왔어요!','3개 2,000원이에요','줄 빨리 줄어요','팥이 더 맛있어요 🫘','방금 굽기 시작했대요','7시쯤 재료 떨어진대요'],KEEP=['어서오세요~ 금방 구워드려요 🐟','슈크림은 방금 나왔어요','오늘은 8시까지 해요'];
+let chatSpot=null;const pick1=a=>a[Math.floor(Math.random()*a.length)];
+function addLog(s,n,t){s.log.push({n,t});if(chatSpot===s)renderLog();if(inQ===s&&chatSpot!==s&&n!='🔔')ticker(n,t)}
+function ticker(n,t){const e=$('tick');e.textContent='💬 '+n+': '+t;e.style.display='block';clearTimeout(e.k);e.k=setTimeout(()=>e.style.display='none',5000)}
+$('tick').onclick=()=>{$('tick').style.display='none';if(inQ)openChat(inQ)};
+function leaveQ(q){if(!inQ)return;const o=inQ;o.q=Math.max(0,o.q-1);addLog(o,'🔔',nick+'님이 줄에서 나갔어요');inQ=null;if(!q)say('줄에서 나왔어요');if(chatSpot===o)openChat(o)}
+function renderLog(){const l=$('log');if(!l)return;l.innerHTML=chatSpot.log.slice(-30).map(m=>`<div><b>${esc(m.n)}</b> ${esc(m.t)}</div>`).join('')||'<small>아직 대화가 없어요. 먼저 말을 걸어보세요!</small>';l.scrollTop=l.scrollHeight}
+// 줄 대화방: 그 가게 줄에 선 사람이면 누구나 참여, 줄 밖이면 읽기만 가능
+function members(s){const i=spots.indexOf(s),me=inQ===s,a=[];for(let k=0;k<Math.min(s.q,8)-(me?1:0);k++)a.push(NAMES[(i*3+k)%8]);return{a,me,more:Math.max(0,s.q-8)}}
+function renderMem(){const e=$('mem');if(!e||!chatSpot)return;const m=members(chatSpot);e.innerHTML=`참여 ${chatSpot.q}명: `+(m.me?`<b>🐱${esc(nick)}(나)</b> `:'')+m.a.map(x=>'🐱'+esc(x)).join(' ')+(m.more?` 외 ${m.more}명`:'')}
+function openChat(s){const me=inQ===s;bub(`<div style="display:flex;justify-content:space-between"><b>💬 ${esc(s.n)} 줄 대화방</b><button class="b" data-x="close" aria-label="닫기">✕</button></div><small>이 가게 줄에 선 사람이면 누구나 참여해요. ${LIVE.on?'지금 같은 줄에 선 진짜 고양이들과 실시간으로 이야기해요.':'데모라서 대화 상대는 가짜예요.'}</small><div class="box" id="mem" style="font-size:12px"></div><div class="box" id="log" style="height:130px;overflow:auto"></div>`+(me?`<div style="display:flex;gap:6px"><input id="ci" maxlength="60" placeholder="예: 지금 슈크림 있어요!" aria-label="메시지"><button class="b p" data-x="send" style="margin-top:8px;white-space:nowrap">보내기</button></div>`:`<div class="box">🧍 줄에 서면 대화에 참여할 수 있어요. 지금은 읽기만 가능해요.</div><button class="b p" style="width:100%;margin-top:8px" data-x="goq" data-i="${spots.indexOf(s)}">줄 서러 가기</button>`));chatSpot=s;renderMem();renderLog()}
+setInterval(()=>{if(chatSpot)renderMem()},3000);
+function sendChat(){const i=$('ci'),t=i&&i.value.trim();if(!t||!chatSpot||inQ!==chatSpot)return;i.value='';const s=chatSpot;addLog(s,nick,t);setBub(pl,t);
+ if(!LIVE.on)setTimeout(()=>{const j=Math.floor(Math.random()*Math.max(1,Math.min(s.q,8))),k=Math.random()<.5&&!stat(s).old,tx=k?pick1(KEEP):pick1(LINES);addLog(s,k?'사장냥':NAMES[(spots.indexOf(s)*3+j)%8],tx);const who=k?s.keeper:s.npc[j];if(who&&who.visible)setBub(who,tx)},1200)}
+setInterval(()=>{if(!running||LIVE.on)return;const c=spots.filter(s=>s.q>0&&!stat(s).old);if(!c.length)return;const s=pick1(c),j=Math.floor(Math.random()*Math.min(s.q,8)),t=pick1(LINES);if(s.npc[j].visible)setBub(s.npc[j],t);addLog(s,NAMES[(spots.indexOf(s)*3+j)%8],t)},4500);
+// ---- 닉네임: 2~10자 한글/영문/숫자, 브라우저에 저장(서버 저장은 실제 프로젝트의 profiles.nickname) ----
+const NMSG='2~10자, 한글·영문·숫자만 쓸 수 있어요.',okNick=n=>/^[가-힣a-zA-Z0-9 ]{2,10}$/.test(n),rndNick=()=>pick1(['은은한','포근한','배고픈','느긋한','졸린','반짝'])+pick1(['붕어','냥이','치즈냥','호떡냥','팥냥']);
+let nick='';try{nick=localStorage.getItem('bz_nick')||''}catch(e){}
+function setNick(n){nick=n;$('tag').textContent='나 · '+n;try{localStorage.setItem('bz_nick',n)}catch(e){}}
+if(!okNick(nick))nick=rndNick();setNick(nick);$('nk').value=nick;
+$('dice').onclick=()=>{$('nk').value=rndNick();$('nm').textContent=''};
+function nextNick(){const n=$('nk').value.trim();if(!okNick(n)){$('nm').textContent=NMSG;return}setNick(n);afterNick()}
+$('nnext').onclick=nextNick;$('nk').addEventListener('keydown',e=>{if(e.key=='Enter')nextNick()});
+$('nickb').onclick=()=>bub(`<b>닉네임 바꾸기</b><input id="nk2" maxlength="10" value="${esc(nick)}" aria-label="닉네임"><div class="g"><button class="b" data-x="close">취소</button><button class="b p" data-x="nicksave">저장</button></div><div id="m" role="alert"></div>`);
+// ---- 지도: 붕어빵 가게만 표시, 눌러서 걸어가기/바로 이동 (위쪽이 정면(-z) 방향) ----
+function openMap(){const ext=Math.max(40,...spots.flatMap(s=>[Math.abs(s.x),Math.abs(s.z)]),Math.abs(P.x),Math.abs(P.z))+15,pos=(x,z)=>`left:${(x/ext*.5+.5)*100}%;top:${(z/ext*.5+.5)*100}%`,rw=8/ext*50;mext=ext;
+ $('mbox').innerHTML=`<div class="rd" style="left:0;right:0;top:${50-rw/2}%;height:${rw}%"></div><div class="rd" style="top:0;bottom:0;left:${50-rw/2}%;width:${rw}%"></div>`+spots.map((s,i)=>{const f=stat(s);return `<button class="mk" data-m="${i}" style="${pos(s.x,s.z)};${f.old?'opacity:.5':''}" aria-label="${esc(s.n)}">${f.e}<small>${esc(s.n)}</small></button>`}).join('')+`<div class="me" style="${pos(P.x,P.z)}">🐱</div>`+(placing?`<div class="me" style="${pos(placing.x,placing.z)}">📍</div>`:'');
+ $('mcard').innerHTML=placing?'<small>새 가게를 놓을 곳을 지도에서 눌러주세요. 📍가 놓일 자리예요.</small>':'<small>붕어빵 가게를 눌러보세요. 🐱는 지금 내 위치예요.</small>';$('map').style.display='flex';if(!placing)showLg(false)}
+const closeMap=()=>$('map').style.display='none';
+$('mapb').onclick=openMap;$('mclose').onclick=closeMap;
+$('mbox').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b){if(placing)pinMap(e);return}const i=+b.dataset.m,s=spots[i],f=stat(s);
+ $('mcard').innerHTML=`<b>${f.e} ${esc(s.n)}</b><br><small>${ago(s.t)} 목격 · 지금 ${Math.round(Math.hypot(s.x-P.x,s.z-P.z))}m · 줄 ${s.q}명</small><div class="g"><button class="b" data-g="walk" data-i="${i}">🚶 걸어가기</button><button class="b p" data-g="tp" data-i="${i}">✨ 바로 이동</button></div>`});
+$('mcard').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b)return;if(b.dataset.g=='place'){closeMap();confirmPlace();return}if(b.dataset.g=='repin'){$('mcard').innerHTML='<small>새 가게를 놓을 곳을 다시 눌러주세요.</small>';return}const s=spots[+b.dataset.i];leaveQ(1);closeMap();
+ if(b.dataset.g=='walk'){autoT={x:s.x+1.5,z:s.z+3.4};say(s.n+'(으)로 걸어가는 중…')}else{autoT=null;P.x=s.x+1.5;P.z=s.z+3.4;say(s.n+' 앞에 도착했어요 🐟')}});
+// ---- 첫 입장 튜토리얼: 대상 요소를 스포트라이트로 비추며 한 단계씩 설명 ----
+const TUT=[['joy','🕹️ 이동','좌측 방향키를 활용해 걸을 수 있어요.'],['cmp','🧭 나침반','가장 가까운 붕어빵 가게의 방향과 거리를 알려줘요.'],
+['mapb','🗺️ 지도','지도 위 표시를 참고해서 지금 영업중일 확률이 높은 가게를 확인해 보아요.'],
+['b1','👀 구경하기','가까운 붕어빵 가게의 정보(최근 목격, 메뉴, 가격)를 보여줘요.'],
+['b2','🔥 봤어요','가게 근처에서 누르면 "방금 붕어빵을 봤어요" 제보가 남아요. 같은 가게는 30분에 한 번만 남길 수 있어요.\n제보를 하면 다른 고양이들이 붕어빵을 얻기 수월하게 도와줘요.'],
+['b3','🧍 줄서기','가장 가까운 가게의 온라인 줄 끝으로 걸어가요. 줄에 서면 그 가게 대화방에 참여할 수 있고, 움직이면 줄에서 나와요. 실제 현장 대기 인원과는 달라요.'],
+['b4','➕ 발견','새 붕어빵 가게를 등록해요. 지도에서 위치를 정하고 사진·메뉴·가격을 남길 수 있어요.'],
+['b5','💬 대화','줄에 선 사람들과 정보를 나누는 대화방이에요. 줄에 서야 글을 쓸 수 있어요. 🍳는 가게 사장냥이에요.'],
+['nickb','🐱 닉네임','언제든 이름을 바꿀 수 있어요. 이제 붕어를 찾으러 가볼까요? 🐟']];
+let TS=TUT;let tutDone=false;try{tutDone=!!localStorage.getItem('bz_tut4')}catch(e){}
+function tut(n){const [id,h,t]=TS[n],r=id?$(id).getBoundingClientRect():null,rg=$('ring'),c=$('tcard');$('tut').style.display='block';rg.style.display='block';
+ if(r){Object.assign(rg.style,{left:r.left-6+'px',top:r.top-6+'px',width:r.width+12+'px',height:r.height+12+'px'})}else Object.assign(rg.style,{left:'50%',top:'45%',width:'0px',height:'0px'});
+ const low=r&&r.top>innerHeight/2;c.style.top=low?'90px':'auto';c.style.bottom=low?'auto':'130px';
+ c.innerHTML=`<b>${h}</b><p>${t.replace(/\n/g,'<br>')}</p><div class="g"><button class="b" data-t="skip">건너뛰기</button><button class="b p" data-t="next" data-n="${n}">${n==TS.length-1?(TS===TUT?'시작하기':'알겠어요'):'다음 ('+(n+1)+'/'+TS.length+')'}</button></div><button class="b" data-t="never" style="width:100%;font-size:12px;background:none;opacity:.7">다시 보지 않기</button>`}
+let tutShown=false;function endTut(){const mp=TS!==TUT;$('tut').style.display='none';$('ring').style.display='none';if(!mp)tutShown=true;TS=TUT}function noMore(){const mp=TS!==TUT;if(!mp){tutDone=true;try{localStorage.setItem('bz_tut4','1')}catch(e){}}else{try{localStorage.setItem('bz_lg2','1')}catch(e){}}endTut();say(mp?'지도 설명은 ℹ️ 버튼으로 다시 볼 수 있어요':'다음부터는 튜토리얼이 나오지 않아요. ❓로 다시 볼 수 있어요')}
+$('tcard').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;if(b.dataset.t=='skip')return endTut();if(b.dataset.t=='never')return noMore();const n=+b.dataset.n;n<TS.length-1?tut(n+1):endTut()});
+$('helpb').onclick=()=>{TS=TUT;tut(0)};
+// ---- 지역: 이름만 정하면 어디든 가능. 지역별로 내가 놓은 가게를 저장해서 다시 와도 그대로 있음 ----
+function hs(a){return[...a].reduce((x,c)=>x*31+c.charCodeAt(0),7)}
+const areaTxt=()=>'📍 '+area+' · 붕어 '+spots.length+'곳 ▾';
+let userSpots={},recent=[];try{userSpots=JSON.parse(localStorage.getItem('bz_user')||'{}');recent=JSON.parse(localStorage.getItem('bz_areas')||'[]')}catch(e){}
+function persist(){userSpots[area]=spots.filter(x=>x.user).map(({n,x,z,t,w,menu,p,ev,photo,addr,land,ll})=>({n,x,z,t,w,menu,p,ev,photo,addr,land,ll}));try{localStorage.setItem('bz_user',JSON.stringify(userSpots))}catch(e){}}
+function renderRec(){$('rec').innerHTML=recent.length?'<small style="width:100%">최근 지역</small>'+recent.map(a=>`<button class="btn s" style="min-width:0;padding:8px 14px" data-r="${esc(a)}">${esc(a)}</button>`).join(''):''}
+$('rec').onclick=e=>{const b=e.target.closest('[data-r]');if(b)pick(b.dataset.r,0)};renderRec();
+function goArea(){const a=$('ra').value.trim().replace(/\s+/g,' ');if(!/^[가-힣a-zA-Z0-9 ]{2,20}$/.test(a)){$('rm').textContent='2~20자, 한글·영문·숫자만 입력할 수 있어요.';return}$('rm').textContent='';pick(a,0)}
+$('rgo').onclick=goArea;$('ra').addEventListener('keydown',e=>{if(e.key=='Enter')goArea()});$('area').style.cursor='pointer';$('area').onclick=()=>$('back').click();
+// ---- 카카오T식 위치 지정: 가운데 핀 고정 + 지도 드래그 (실제 지도 타일은 Leaflet+OSM으로 교체 예정, 이 미리보기는 외부 요청 불가) ----
+let pk={x:0,z:0};const PS=7;
+function pkMove(){$('pkin').style.transform=`translate(${-pk.x*PS}px,${-pk.z*PS}px)`;$('pka').textContent='📍 '+addrText(pk.x,pk.z)}
+function openPicker(){closeBub();pk={x:P.x,z:P.z};const em=(x,z,t)=>`<div style="position:absolute;left:${x*PS}px;top:${z*PS}px;transform:translate(-50%,-50%);font-size:22px">${t}</div>`;
+ $('pkin').innerHTML=`<div style="position:absolute;left:-9999px;width:19998px;top:${-4*PS}px;height:${8*PS}px;background:#5a636b"></div><div style="position:absolute;top:-9999px;height:19998px;left:${-4*PS}px;width:${8*PS}px;background:#5a636b"></div>`+spots.map(k=>em(k.x,k.z,stat(k).e)).join('')+em(P.x,P.z,'🐱');$('pk').style.display='flex';pkMove()}
+let pd=null;const pm=$('pkmap');pm.addEventListener('pointerdown',e=>{pd=[e.clientX,e.clientY];pm.setPointerCapture(e.pointerId)});pm.addEventListener('pointermove',e=>{if(!pd)return;pk.x=Math.max(-250,Math.min(250,pk.x-(e.clientX-pd[0])/PS));pk.z=Math.max(-250,Math.min(250,pk.z-(e.clientY-pd[1])/PS));pd=[e.clientX,e.clientY];pkMove()});['pointerup','pointercancel'].forEach(n=>pm.addEventListener(n,()=>pd=null));
+$('pkx').onclick=()=>$('pk').style.display='none';$('pkme').onclick=()=>{pk={x:P.x,z:P.z};pkMove()};$('pkok').onclick=()=>{$('pk').style.display='none';regStart(pk.x,pk.z)};
+// ---- 첫 위치 안내: 시스템 권한창 전에 우리 안내 먼저. 거부해도 지역 선택으로 자연스럽게 ----
+let LL=null,gpsNext=null;const fakeLL=a=>({lat:37.3+(Math.abs(hs(a))%1000)/5000,lng:126.7+(Math.abs(hs(a))%777)/5000});
+function gpsOK(p){gpsNext={lat:p.coords.latitude,lng:p.coords.longitude};pick('내 위치 ('+p.coords.latitude.toFixed(3)+', '+p.coords.longitude.toFixed(3)+')',0)}
+function afterNick(){let a=null;try{a=localStorage.getItem('bz_loc');const g=JSON.parse(localStorage.getItem('bz_ll')||'null');if(g)gpsNext=g}catch(e){}a?pick(a,0):scr('ask')}
+$('askgo').onclick=()=>{if(!navigator.geolocation)return scr('loc');navigator.geolocation.getCurrentPosition(gpsOK,e=>{geoFail(e,1)},{timeout:15e3,maximumAge:6e4})};$('askman').onclick=()=>scr('loc');
+// ---- 오늘의 고양이: 첫 접속 때 랜덤 배정 후 저장, 하루 한 번 다시 뽑기 ----
+let myCat;try{myCat=JSON.parse(localStorage.getItem('bz_cat'))}catch(e){}if(!myCat||!myCat.eye)myCat=catStyle(Date.now());
+try{localStorage.setItem('bz_cat',JSON.stringify(myCat))}catch(e){}// 고양이는 고르는 게 아니라 랜덤으로 내려옴(처음 한 번 정해져 저장)
+function drawPrev(){const c=$('cp').getContext('2d');c.clearRect(0,0,200,200);c.save();c.scale(1.667,1.667);c.fillStyle='#'+myCat.fur.toString(16).padStart(6,'0');c.beginPath();c.arc(60,66,46,0,7);c.fill();[[[20,44],[24,6],[52,24]],[[100,44],[96,6],[68,24]]].forEach(t=>{c.beginPath();c.moveTo(...t[0]);c.lineTo(...t[1]);c.lineTo(...t[2]);c.fill()});c.save();c.translate(2,10);drawFace(c,myCat,.9);c.restore();c.restore()}
+// 새 이웃 도착 대사(말풍선 한 장씩 탭)
+let wi=0;const WP=()=>[`오늘 <span class="hl">${esc(nick)}</span>님이라는 분이<br><span class="hl2">붕세권</span>의 새 이웃이<br>되었다냥!`,`이웃 고양이는 <span class="hl">랜덤</span>으로 정해졌다냥!<br>동네를 한 바퀴 돌며<br>붕어빵 흔적을 찾아보자냥!`];
+function welcome(){let w=null;try{w=localStorage.getItem('bz_wel')}catch(e){}if(w===nick)return afterNick();wi=0;scr('welcome');drawPrev();$('dt').innerHTML=WP()[0]}
+function wnext(){if(++wi<2){$('dt').innerHTML=WP()[wi];return}try{localStorage.setItem('bz_wel',nick)}catch(e){}afterNick()}
+$('dlg').onclick=wnext;$('dlg').addEventListener('keydown',e=>{if(e.key=='Enter'||e.key==' ')wnext()});
+$('bgty').innerHTML='<svg aria-hidden="true"><defs><pattern id="pt" width="420" height="340" patternUnits="userSpaceOnUse" patternTransform="rotate(-6)"><use href="#ty" x="30" y="40" width="96" height="61"/><use href="#tyb" x="250" y="210" width="96" height="61"/></pattern></defs><rect width="100%" height="100%" fill="url(#pt)"/></svg>';
+// ---- 실시간 월드 연결 지점(Supabase Realtime 연결 전 자리): 공유되는 건 world 좌표뿐, GPS는 공유 안 함 ----
+const RT={join(room,me){/* supabase.channel('world:'+room,{config:{presence:{key:sessionId}}}) 에 {nickname,cat_style,world_x,world_z} track */},move(x,z){/* 약 5Hz broadcast */},onPeers(cb){/* presence sync → 다른 고양이 렌더 */}};
+// ---- 역 목록(실존 역): 검색하면 걸러지고, 누르면 그 동네로 ----
+const STN=['서울역','시청','종로3가','동대문','명동','혜화','홍대입구','합정','신촌','이대','마포','여의도','영등포','신도림','구로디지털단지','가산디지털단지','노량진','용산','이태원','한남','건대입구','성수','왕십리','잠실','천호','강남','역삼','선릉','삼성','교대','고속터미널','신사','압구정','사당','서울대입구','신림','봉천','노원','수유','미아사거리','창동','불광','연신내','상봉','광화문','을지로입구','충무로','안국','경복궁','대학로','판교','정자','수내','서현','야탑','미금','오리','수원','수원시청','영통','안양','평촌','범계','부천','송내','역곡','중동','광명','철산','인천','부평','주안','인하대','동인천','일산','정발산','마두','백석','대화','화정','의정부','구리','하남검단산','광교','동탄','천안','대전','서면','해운대','부산','광안','동대구','반월당','광주송정','제주시청'];
+function renderStn(q){q=(q||'').trim().replace(/역$/,'');const l=STN.filter(n=>!q||n.includes(q));$('stl').innerHTML=l.length?l.map(n=>`<button class="btn s" role="listitem" data-st="${n}역">${n}역</button>`).join(''):'<small>목록에 없으면 위 버튼으로 직접 이동해요.</small>'}
+$('stl').addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(b)pick(b.dataset.st,0)});$('ra').addEventListener('input',()=>renderStn($('ra').value));renderStn('');
+// ---- 배경음: 파일 없이 브라우저에서 직접 만드는 잔잔한 겨울 오르골. 모바일은 터치 후에만 재생되므로 [입장하기]에서 시작 ----
+let muted=false;try{muted=localStorage.getItem('bz_mute')=='1'}catch(e){}
+const Mus={c:null,g:null,t:null,n:0,st:0,CH:[[261.6,329.6,392],[220,261.6,329.6],[174.6,220,261.6],[196,246.9,293.7]],PE:[523.3,587.3,659.3,784,880],
+ note(f,t,d,v,ty){const c=this.c,o=c.createOscillator(),g=c.createGain();o.type=ty||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(this.g);o.start(t);o.stop(t+d+.05)},
+ sched(){const c=this.c;while(this.n<c.currentTime+.8){const s=this.st++,ch=this.CH[(s>>3)%4],i=s%8,t=this.n;if(i==0){this.note(ch[0]/2,t,3,.16);this.note(ch[1],t,3,.04,'triangle')}this.note(ch[[0,1,2,1,2,1,2,1][i]]*2,t,1.1,.07);if(Math.random()<.3)this.note(this.PE[Math.random()*5|0],t+.2,1.4,.045);this.n+=.42}},
+ noise(d){if(!this.nb){const c=this.c,b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;this.nb=b}return this.nb},
+ // 바삭: 아주 짧은 고음 노이즈 4~7번이 빠르게 연달아 터지는 소리
+ crunch(t){const c=this.c,n=4+Math.random()*3|0;for(let k=0;k<n;k++){const tt=t+k*.032+Math.random()*.02,o=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();o.buffer=this.noise();f.type='bandpass';f.frequency.value=2600+Math.random()*3200;f.Q.value=1.2;g.gain.setValueAtTime(.5*(1-k/n*.6),tt);g.gain.exponentialRampToValueAtTime(.001,tt+.045);o.connect(f);f.connect(g);g.connect(this.g);o.start(tt,Math.random()*1.5,.06)}},
+ // 철판 위 지글지글: 아주 작은 고음 노이즈를 계속 깔아둠
+ sizzle(){if(this.sz)return;const c=this.c,o=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();o.buffer=this.noise();o.loop=true;f.type='highpass';f.frequency.value=5500;g.gain.value=.035;o.connect(f);f.connect(g);g.connect(this.g);o.start();this.sz=o},
+ start(){if(muted)return;if(!this.c){const A=window.AudioContext||window.webkitAudioContext;if(!A)return;this.c=new A()}if(!this.g){this.g=this.c.createGain();this.g.gain.value=0;this.g.connect(this.c.destination)}
+  this.c.resume();if(!this.t){this.n=this.c.currentTime+.1;this.t=setInterval(()=>this.sched(),250)}const g=this.g.gain;g.cancelScheduledValues(this.c.currentTime);g.linearRampToValueAtTime(.6,this.c.currentTime+1.2)},
+ stop(){if(!this.c)return;const g=this.g.gain;g.cancelScheduledValues(this.c.currentTime);g.linearRampToValueAtTime(0,this.c.currentTime+.3);clearInterval(this.t);this.t=null}};
+const musUi=()=>$('musb').textContent=muted?'🔇':'🔊';musUi();
+$('musb').onclick=()=>{muted=!muted;try{localStorage.setItem('bz_mute',muted?'1':'0')}catch(e){}muted?Mus.stop():Mus.start();musUi();say(muted?'배경음을 껐어요':'배경음을 켰어요 🎵')};
+$('enter').addEventListener('click',()=>Mus.start());addEventListener('pointerdown',()=>{if(!muted&&Mus.c&&Mus.c.state!='running')Mus.c.resume()});
+document.addEventListener('visibilitychange',()=>{if(!Mus.c)return;document.hidden?Mus.c.suspend():(!muted&&Mus.c.resume())});
+// ---- 발자국 소리: 눈 위를 걷는 뽀득 소리(짧은 노이즈). 이동 중에만, 🔊 버튼으로 같이 꺼짐 ----
+const Sfx={c:null,buf:null,alt:0,ctx(){if(!this.c){this.c=Mus.c||new(window.AudioContext||window.webkitAudioContext)();Mus.c=this.c;const b=this.c.createBuffer(1,this.c.sampleRate*.14|0,this.c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);this.buf=b}if(this.c.state!='running')this.c.resume();return this.c},
+ step(){if(muted)return;try{const c=this.ctx(),t=c.currentTime,o=c.createOscillator(),g=c.createGain();this.alt^=1;const f=(this.alt?250:205)*(.95+Math.random()*.1);o.type='sine';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.45,t+.09);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.28,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+.11);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.13)}catch(e){}}};
+let stepT=0;function stepSnd(dt){if(P.mov&&!inQ){stepT-=dt;if(stepT<=0){stepT=.36;Sfx.step()}}else stepT=.05}
+// ---- 버튼 효과음: 뽀잉 하는 작은 팝 + 반짝 (주요 버튼은 조금 높게) ----
+Sfx.pop=function(up){if(muted)return;try{const c=this.ctx(),t=c.currentTime,f=(up?720:540)*(.97+Math.random()*.06),mk=(fr,to,t0,v,d,ty)=>{const o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.setValueAtTime(fr,t0);o.frequency.exponentialRampToValueAtTime(to,t0+d*.6);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+.006);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+d+.03)};mk(f*.8,f*1.5,t,.16,.13,'sine');mk(f*2,f*2.4,t+.045,.05,.1,'triangle')}catch(e){}};
+document.addEventListener('click',e=>{const b=e.target.closest('button,label.b,[role=button]');if(b&&!b.disabled)Sfx.pop(b.classList.contains('p')||b.classList.contains('btn')&&!b.classList.contains('s'))},true);
+$('tskip').onclick=endTut;
+// ---- 사장냥 혼잣말/인사 말풍선: 가까운 가게에서 가끔 한마디씩 ----
+const SAY=['맛있게 해드릴게요~ 🐟','바삭하게 구워드릴게요!','갓 나왔어요, 따끈해요 🔥','천천히 줄 서주세요~','뜨거우니 조심하세요!','팥도 슈크림도 있어요','오늘도 열심히 굽는 중!','어서오세요냥~'];
+setInterval(()=>{if(!running||!world)return;spots.forEach(s=>{if(!s.keeper.visible||Math.hypot(s.x-P.x,s.z-P.z)>35||Math.random()>.45)return;setBub(s.keeper,pick1(SAY))})},3200);
+document.querySelectorAll('#map .lg span').forEach((e,i)=>e.id='lg'+i);
+const MAPTOUR=[['lg0','🔥 최근 목격','24시간 안에 이 자리에서 붕어빵을 본 사람이 있어요. 예를 들어 10분 안에 봤다면 지금도 있을 가능성이 높아요!'],
+['lg1','🐟 며칠 전 목격','1~7일 전에 목격됐어요. 오늘은 안 나왔을 수도 있어요.'],
+['lg2','🌙 지금은 없을 수도','최근 1시간 안에 "지금은 없어요" 제보가 마지막 목격보다 더 늦게 들어왔어요. 잠깐 자리를 비웠을 수 있어요.'],
+['lg3','🌫️ 오래된 제보','7일이 넘도록 아무도 확인하지 않았어요. 아직 있는지 직접 알려주세요!'],
+['lgi','❓ 튜토리얼 다시 보기','이 설명은 오른쪽 위 ❓ 튜토리얼 버튼을 누르면 언제든 처음부터 다시 볼 수 있어요. 사용자 제보를 기반으로 한 표시라 영업을 보장하지는 않아요.']];
+function showLg(force){let seen=false;try{seen=localStorage.getItem('bz_lg2')=='1'}catch(e){}if(force||!seen){TS=MAPTOUR;tut(0)}}
+$('lgi').onclick=()=>showLg(true);$('lgok').onclick=()=>{$('lgx').style.display='none';try{localStorage.setItem('bz_lg','1')}catch(e){}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" onerror="window.__sbfail=1"></script>
+<script src="/world/live.js"></script>
+</body></html>
