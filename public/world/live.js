@@ -277,7 +277,7 @@
 .rh button{min-width:44px;min-height:44px;touch-action:manipulation}.rh span{display:flex;gap:6px}.rc{padding:10px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:42%;overflow:auto;font-size:14px;background:var(--bg)}
 .rm-pin{font-size:20px;background:#fff;border:2px solid #D98A2B;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px #0004}.rm-pin.old{opacity:.55}
 .mapwrap{position:relative;flex:1;min-height:200px}.mapwrap>div:first-child{position:absolute;inset:0}
-.pkpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:34px;z-index:1000;pointer-events:none;filter:drop-shadow(0 2px 2px #0006)}
+.rppin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:34px;z-index:1000;pointer-events:none;filter:drop-shadow(0 2px 2px #0006)}
 .rlink{display:inline-block;text-decoration:none;text-align:center;flex:1}#rpick input{margin:0;flex:1}`;
   document.head.appendChild(st9);
   const mk = html => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild };
@@ -365,26 +365,26 @@
   let pk = null, pkR = null, pkDone = null;
   function ensurePK() {
     let el = $('rpick'); if (el) return el;
-    el = mk(`<div id="rpick" role="dialog" aria-label="가게 위치 찍기"><div class="rh"><b>📍 실제 가게 위치를 찍어주세요</b><button class="b" id="pkx" aria-label="닫기">✕</button></div>
-<div style="display:flex;gap:6px;padding:0 12px 8px"><input id="pks" maxlength="40" placeholder="장소 검색 (예: 부천역 1번 출구)" aria-label="장소 검색"><button class="b" id="pkg">🔍</button></div>
-<div class="mapwrap"><div id="pkm"></div><div class="pkpin">📍</div></div>
-<div class="rc" id="pkc"><small>월드에서 고른 자리를 기준으로 시작했어요. 지도를 움직여서 📍 핀 끝을 실제 가게 위치에 맞춰주세요.</small><div class="g"><button class="b" id="pkme">📍 내 위치로</button><button class="b p" id="pkok">여기로 등록</button></div><button class="b" id="pkc2" style="width:100%;margin-top:8px">취소</button></div></div>`);
+    el = mk(`<div id="rpick" role="dialog" aria-label="가게 위치 찍기"><div class="rh"><b>📍 실제 가게 위치를 찍어주세요</b><button class="b" id="rpx" aria-label="닫기">✕</button></div>
+<div style="display:flex;gap:6px;padding:0 12px 8px"><input id="rps" maxlength="40" placeholder="장소 검색 (예: 부천역 1번 출구)" aria-label="장소 검색"><button class="b" id="rpg">🔍</button></div>
+<div class="mapwrap"><div id="rpm"></div><div class="rppin">📍</div></div>
+<div class="rc" id="rpc"><small>월드에서 고른 자리를 기준으로 시작했어요. 지도를 움직여서 📍 핀 끝을 실제 가게 위치에 맞춰주세요.</small><div class="g"><button class="b" id="rpme">📍 내 위치로</button><button class="b p" id="rpok">여기로 등록</button></div><button class="b" id="rpcancel" style="width:100%;margin-top:8px">취소</button></div></div>`);
     document.body.appendChild(el);
     el.addEventListener('keydown', e => e.stopPropagation());
     const closePk = () => { el.style.display = 'none'; pkDone = null };
-    $('pkx').onclick = closePk; $('pkc2').onclick = closePk;
-    $('pkx').addEventListener('touchend', e => { e.preventDefault(); closePk() }, { passive: false });
+    $('rpx').onclick = closePk; $('rpcancel').onclick = closePk;
+    $('rpx').addEventListener('touchend', e => { e.preventDefault(); closePk() }, { passive: false });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && el.style.display !== 'none') closePk() });
-    $('pkg').onclick = async () => {
-      const q = $('pks').value.trim(); if (!q) return;
-      const c = await geocode(q); if (c) pk.setView(c, 17); else $('pkc').firstChild.textContent = '장소를 못 찾았어요. 다른 말로 검색하거나 지도를 직접 움직여 주세요.';
+    $('rpg').onclick = async () => {
+      const q = $('rps').value.trim(); if (!q) return;
+      const c = await geocode(q); if (c) pk.setView(c, 17); else $('rpc').firstChild.textContent = '장소를 못 찾았어요. 다른 말로 검색하거나 지도를 직접 움직여 주세요.';
     };
-    $('pks').addEventListener('keydown', e => { if (e.key === 'Enter') $('pkg').click() });
-    $('pkme').onclick = () => {
+    $('rps').addEventListener('keydown', e => { if (e.key === 'Enter') $('rpg').click() });
+    $('rpme').onclick = () => {
       if (!navigator.geolocation) return;
-      navigator.geolocation.getCurrentPosition(p => pk.setView([p.coords.latitude, p.coords.longitude], 18), e => { $('pkc').firstChild.textContent = geoMsg(e) }, { timeout: 15000, maximumAge: 60000 });
+      navigator.geolocation.getCurrentPosition(p => pk.setView([p.coords.latitude, p.coords.longitude], 18), e => { $('rpc').firstChild.textContent = geoMsg(e) }, { timeout: 15000, maximumAge: 60000 });
     };
-    $('pkok').onclick = () => {
+    $('rpok').onclick = () => {
       if (!pk || !pkR) return; const c = pk.getCenter();
       pkR.real = { lat: +c.lat.toFixed(6), lng: +c.lng.toFixed(6) };
       el.style.display = 'none'; const f = pkDone; pkDone = null; if (f) f();
@@ -395,10 +395,10 @@
     const el = ensurePK(); el.style.display = 'flex'; pkR = r; pkDone = done;
     loadLeaflet().then(async () => {
       const lf = LF();
-      if (!pk) { pk = lf.map('pkm'); tiles(lf).addTo(pk) }
+      if (!pk) { pk = lf.map('rpm'); tiles(lf).addTo(pk) }
       const c = r.real ? [r.real.lat, r.real.lng] : await startCenter(r);
       pk.setView(c, 17); setTimeout(() => pk.invalidateSize(), 60);
-    }).catch(() => { $('pkc').firstChild.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.' });
+    }).catch(() => { $('rpc').firstChild.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.' });
   }
 
   // 진입 버튼(🌏)과 가게 카드의 "실제 지도에서 보기"
