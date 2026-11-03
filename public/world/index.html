@@ -369,4 +369,31 @@ $('lgi').onclick=()=>showLg(true);$('lgok').onclick=()=>{$('lgx').style.display=
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" onerror="window.__sbfail=1"></script>
 <script src="/world/live.js"></script>
+<script>
+(function(){
+var ua=navigator.userAgent||'';
+if(!/Instagram|FBAN|FBAV|FB_IAB|KAKAOTALK|NAVER\(inapp|Line\/|DaumApps|everytimeApp/i.test(ua))return;
+var url=location.href,isAnd=/Android/i.test(ua);
+function bar(){
+ if(document.getElementById('inappbar'))return;
+ var d=document.createElement('div');d.id='inappbar';
+ d.style.cssText='position:fixed;left:12px;right:12px;top:12px;z-index:99999;background:#FFF6E3;color:#3A1F10;border:2px solid #D98A2B;border-radius:18px;padding:14px 16px;font:600 14px/1.5 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);touch-action:auto;user-select:text';
+ d.innerHTML='<div style="font-weight:800;margin-bottom:6px">\u26A0\uFE0F 앱 안 브라우저에서는 현재 위치를 못 가져와요</div><div style="font-weight:500;margin-bottom:10px">화면 모서리의 \u22EF 또는 공유 버튼 \u2192 <b>Safari(기본 브라우저)로 열기</b>를 눌러주세요. 그냥 쓰고 싶다면 <b>지역 직접 선택</b>으로도 입장할 수 있어요.</div><div style="display:flex;gap:8px"><button id="inappcp" style="flex:1;border:0;border-radius:12px;padding:10px;background:#D98A2B;color:#fff;font:700 14px system-ui">링크 복사</button><button id="inappx" style="flex:0 0 72px;border:0;border-radius:12px;padding:10px;background:#EDE3D0;color:#3A1F10;font:700 14px system-ui">닫기</button></div>';
+ document.body.appendChild(d);
+ document.getElementById('inappx').onclick=function(){d.remove()};
+ document.getElementById('inappcp').onclick=function(){
+  var b=this;function ok(){b.textContent='복사됐어요! 주소창에 붙여넣기'}
+  try{navigator.clipboard.writeText(url).then(ok,fb)}catch(e){fb()}
+  function fb(){var t=document.createElement('textarea');t.value=url;t.style.cssText='position:fixed;left:-999px';document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){b.textContent=url}t.remove()}
+ };
+}
+if(isAnd){
+ if(/KAKAOTALK/i.test(ua)){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url)}
+ else{location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end'}
+ setTimeout(bar,1800);
+}else{
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bar,600)});else setTimeout(bar,600);
+}
+})();
+</script>
 </body></html>
