@@ -221,12 +221,11 @@
   const stars = n => '⭐'.repeat(Math.max(0, Math.min(5, n)));
   function revHTML(s, i) {
     const r = getRev(s), avg = r.length ? (r.reduce((a, b) => a + b.rating, 0) / r.length).toFixed(1) : null;
-    return `<div class="box" id="rvbox"><b>😋 고양이 리뷰</b> ${avg ? `<span>⭐ ${avg} · ${r.length}개</span>` : ''}` +
-      (r.slice(0, 3).map(x => `<div style="margin-top:4px">${stars(x.rating)} <b>${esc(x.nick || '익명냥')}</b> ${esc(x.body || '')}</div>`).join('') || '<small style="display:block;margin-top:4px">아직 리뷰가 없어요. 맛있었다면 첫 리뷰를 남겨주세요!</small>') +
-      `<div class="g"><button class="b" data-x="rev" data-i="${i}">✍️ 리뷰 남기기</button>${r.length > 3 ? `<button class="b" data-x="revall" data-i="${i}">전체 ${r.length}개</button>` : ''}</div></div>`;
+    return `<div class="rv" id="rvbox"><div class="rvh"><span>${avg ? `⭐ ${avg} · 리뷰 ${r.length}개` : '아직 리뷰가 없어요'}</span><span><button class="lk2" data-x="rev" data-i="${i}">리뷰 쓰기</button>${r.length > 1 ? `<button class="lk2" data-x="revall" data-i="${i}">모두 보기</button>` : ''}</span></div>` +
+      (r[0] ? `<div class="rv1">${stars(r[0].rating)} <b>${esc(r[0].nick || '익명')}</b> ${esc(r[0].body || '')}</div>` : '') + `</div>`;
   }
   const _show = window.show;
-  window.show = function (s) { _show(s); const b = $('bub'); if (b && b.style.display !== 'none') b.insertAdjacentHTML('beforeend', (s.lat != null ? `<button class="b" style="width:100%;margin-top:8px" data-x="realgo" data-i="${spots.indexOf(s)}">🌏 실제 지도에서 보기</button>` : '') + revHTML(s, spots.indexOf(s))) };
+  window.show = function (s) { _show(s); const b = $('bub'), rows = $('rows'); if (b && b.style.display !== 'none' && rows) rows.insertAdjacentHTML('beforeend', revHTML(s, spots.indexOf(s)) + (s.lat != null ? `<button class="row" data-x="realgo" data-i="${spots.indexOf(s)}"><span>🌏 실제 지도에서 보기</span><span>›</span></button>` : '')) };
   function revForm(i, rating, body) {
     const s = spots[i], mine = getRev(s).find(v => v.mine || (uid && v.uid === uid)); rating = rating || (mine && mine.rating) || 5; body = body != null ? body : (mine && mine.body) || '';
     bub(`<div style="display:flex;justify-content:space-between"><b>😋 ${esc(s.n)} 리뷰</b><button class="b" data-x="close" aria-label="닫기">✕</button></div><small>맛있었다면 다른 고양이들이 참고할 수 있게 남겨주세요. 한 가게에 하나만 남길 수 있고, 다시 쓰면 바뀌어요.</small>
