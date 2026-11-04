@@ -1,9 +1,12 @@
 /* 붕세권 live.js — 서버(Supabase) 연결 계층.
  * 설정이 없거나 연결에 실패하면 LIVE.on=false 로 남고, 월드는 기존 데모(혼자 하기) 모드로 동작합니다.
- * 진짜 GPS 좌표는 어디에도 보내지 않습니다. 공유되는 건 동네 이름(area)과 월드 좌표(world_x, world_z)뿐입니다. */
+ * 아바타는 동네 공통 시작점에서 출발합니다. GPS에서 계산한 사용자 위치를 아바타 좌표로 공유하지 않습니다. */
 (function () {
   'use strict';
   const L = window.LIVE;
+  L.loadState = 'idle';
+  L.realtimeState = 'idle';
+  let loadVersion = 0;
   L.photos = false; // 사진 기능: 신고/관리 기능이 생기기 전까지 꺼둠
   const SCHEMA_HINT = '서버 설정을 확인해 주세요';
   let sb = null, ch = null, uid = null, peers = [], meshes = {}, sid = null, lastTrack = '', lastMv = '', lastChat = 0, qt = 0, lastQ = null;
@@ -18,18 +21,21 @@
   /* ---------- 1. 시작: 설정 읽기 → 클라이언트 → 익명 로그인 ---------- */
   L.initP = (async () => {
     try {
-      if (window.__sbfail || !window.supabase) return;
+      if (new URLSearchParams(location.search).get('mode') === 'demo') { L.demoReason = 'selected'; return }
+      if (window.__sbfail || !window.supabase) throw new Error('client_unavailable');
       const r = await Promise.race([fetch('/api/config', { cache: 'no-store' }), new Promise((_, j) => setTimeout(() => j('timeout'), 3000))]);
-      if (!r.ok) return;
+      if (r.status === 503) { L.demoReason = 'unconfigured'; return }
+      if (!r.ok) throw new Error('config_unavailable');
       const c = await r.json();
-      if (!c || !c.url || !c.anon) return;
+      if (!c || !c.url || !c.anon) throw new Error('config_invalid');
       L.cfg = c;
       sb = window.supabase.createClient(c.url, c.anon, { realtime: { params: { eventsPerSecond: 10 } } });
       let { data } = await sb.auth.getSession();
       if (!data.session) { const x = await sb.auth.signInAnonymously(); if (x.error) throw x.error; data = x.data }
       uid = data.session ? data.session.user.id : (data.user && data.user.id);
       L.sb = sb; L.uid = uid; L.on = true;
-    } catch (e) { console.warn('[bungzone] 서버 연결 실패 → 데모 모드', e && e.message || e); L.on = false }
+    } catch (e) { console.warn('[bungzone] 서버 연결 실패 → 데모 모드', e && e.message || e); L.on = false; L.demoReason = 'error' }
+    finally { refreshWorldUI() }
   })();
 
   /* ---------- 2. 동네 입장: pick 을 감싸서 연결 준비가 끝난 뒤 실행 ---------- */
@@ -56,7 +62,8 @@
   }
   L.load = async function (a) {
     if (!L.on) return;
-    L.area = a;
+    const version = ++loadVersion;
+    L.area = a; L.loadState = 'loading'; refreshWorldUI();
     try {
       const { data, error } = await sb.from('shops').select('*,shop_menu(menu),shop_photos(url,created_at),reviews(rating,body,nick,user_id,created_at)')
         .eq('area', a).order('created_at', { referencedTable: 'reviews', ascending: false }).limit(20, { referencedTable: 'reviews' });
@@ -64,28 +71,34 @@
       const ids = data.map(d => d.id); let sg = [];
       if (ids.length) {
         const q = await sb.from('sightings').select('shop_id,status,user_id,created_at').in('shop_id', ids).gte('created_at', new Date(Date.now() - 7 * 864e5).toISOString());
-        if (!q.error) sg = q.data;
+        if (q.error) throw q.error;
+        sg = q.data;
       }
-      data.forEach(r => { const k = mkSpot(r, sg.filter(x => x.shop_id === r.id)); spots.push(k); stall(k) });
-    } catch (e) { fail('가게 목록을 못 불러왔어요. ' + SCHEMA_HINT, e) }
-    // 위치 허용으로 들어왔다면 고양이를 실제 내 위치에 맞는 월드 자리에 세워요(내가 등록한 가게가 바로 옆에 생기도록)
-    try {
-      const g = JSON.parse(localStorage.getItem('bz_ll') || 'null'), an = g && g.lat ? await anchorLL() : null;
-      if (an) { const w = toWorld(an, g.lat, g.lng); P.x = w.x; P.z = w.z }
-    } catch (e) { }
-    join(a);
+      if (version !== loadVersion) return;
+      data.forEach(r => { if (spots.some(s => s.id === r.id)) return; const k = mkSpot(r, sg.filter(x => x.shop_id === r.id)); spots.push(k); stall(k) });
+      L.loadState = 'ready';
+      if (!ch) join(a);
+    } catch (e) {
+      if (version !== loadVersion) return;
+      console.warn('[bungzone] 가게 목록 로딩 실패', e);
+      L.loadState = 'error';
+    } finally {
+      if (version === loadVersion) refreshWorldUI();
+    }
+
   };
 
   /* ---------- 4. 실시간 방: 접속 중인 고양이, 줄, 채팅, 새 가게/목격/리뷰 ---------- */
   function me() { return { sid, nick: nick, cat: myCat, q: inQ && inQ.id ? inQ.id : null, qt: qt, x: +P.x.toFixed(1), z: +P.z.toFixed(1) } }
   function join(a) {
+    const version = loadVersion;
     ch = sb.channel('world:' + a, { config: { presence: { key: sid }, broadcast: { self: false } } });
     ch.on('presence', { event: 'sync' }, onSync)
       .on('broadcast', { event: 'mv' }, ({ payload }) => onMove(payload))
       .on('broadcast', { event: 'chat' }, ({ payload }) => onChat(payload))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'shops', filter: 'area=eq.' + a }, ({ new: r }) => {
         if (r.created_by === uid || spots.some(s => s.id === r.id)) return;
-        const k = mkSpot(r, [{ created_at: r.created_at, status: 'seen', user_id: r.created_by }]); spots.push(k); stall(k); $('area').textContent = areaTxt(); say('🐟 새 붕어빵이 발견됐어요: ' + k.n);
+        const k = mkSpot(r, [{ created_at: r.created_at, status: 'seen', user_id: r.created_by }]); spots.push(k); stall(k); refreshWorldUI(); say('🐟 새 붕어빵이 발견됐어요: ' + k.n);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sightings' }, ({ new: r }) => {
         const s = spots.find(x => x.id === r.shop_id); if (!s || r.user_id === uid) return;
@@ -95,10 +108,16 @@
         const s = r && spots.find(x => x.id === r.shop_id); if (!s || r.user_id === uid) return;
         s.rev = (s.rev || []).filter(v => v.uid !== r.user_id); s.rev.unshift({ rating: +r.rating, body: strs(r.body, 80), nick: strs(r.nick, 10), uid: r.user_id, t: Date.parse(r.created_at) });
       })
-      .subscribe(st => { if (st === 'SUBSCRIBED') { lastTrack = ''; track(true) } });
+      .subscribe(st => {
+        if (version !== loadVersion) return;
+        if (st === 'SUBSCRIBED') { L.realtimeState = 'ready'; lastTrack = ''; track(true) }
+        else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') L.realtimeState = 'error';
+        refreshWorldUI();
+      });
     saveProfile();
   }
   function leave() {
+    ++loadVersion; L.loadState = 'idle'; L.realtimeState = 'idle';
     try { if (ch && sb) { ch.untrack(); sb.removeChannel(ch) } } catch (e) { }
     ch = null; peers = []; Object.keys(meshes).forEach(k => dropMesh(k)); lastTrack = '';
   }
@@ -174,10 +193,45 @@
 
   /* ---------- 7. 봤어요 / 새 가게 ---------- */
   const _mark = window.mark;
-  window.mark = function (i, st, bar) {
-    const s = spots[i], ok = !(s.last && Date.now() - s.last < 18e5);
-    _mark(i, st, bar);
-    if (L.on && ok && s.id) sb.from('sightings').insert({ shop_id: s.id, status: st }).then(r => { if (r.error) fail(/duplicate/.test(r.error.message) ? '같은 가게는 30분에 한 번만 남길 수 있어요' : '제보가 서버에 저장되지 않았어요', r.error) });
+  window.mark = async function (i, st, bar) {
+    const s = spots[i];
+    if (!s || s.pendingReport) return;
+    if (!L.on) return _mark(i, st, bar);
+    if (!s.id) { say('가게 저장이 끝난 뒤 다시 제보해 주세요'); return }
+    if (s.last && Date.now() - s.last < 18e5) { say('같은 가게는 30분에 한 번만 남길 수 있어요'); return }
+    s.pendingReport = true;
+    const card = $('bub');
+    const buttons = Array.from(card.querySelectorAll('[data-x="seen"], [data-x="none"]')).filter(b => spots[+b.dataset.i] === s);
+    buttons.forEach(b => { b.disabled = true });
+    const cardBefore = card.innerHTML;
+    say('제보를 저장하고 있어요…');
+    try {
+      const result = await sb.from('sightings').insert({ shop_id: s.id, status: st });
+      if (result.error) throw result.error;
+      const currentIndex = spots.indexOf(s);
+      if (currentIndex < 0) return;
+      // Update only the original shop; the user may have changed areas or cards.
+      s.last = Date.now();
+      (s.ev = s.ev || []).push({ t: s.last, st, sid: uid });
+      if (st === 'seen') { s.t = s.last; s.w++ }
+      lab(s);
+      try { localStorage.setItem('bz_sm', '1') } catch (e) { }
+      if (card.innerHTML === cardBefore && card.style.display === 'block') {
+        if (bar) closeBub(); else { s.pendingReport = false; show(s) }
+      }
+      say(st === 'seen' ? '🔥 목격을 저장했어요. 고마워요!' : '🌙 제보를 저장했어요. 고마워요!');
+    } catch (e) {
+      console.warn('[bungzone] 제보 저장 실패', e);
+      say(/duplicate/.test(e.message || '') ? '같은 가게는 30분에 한 번만 남길 수 있어요' : '제보를 저장하지 못했어요. 연결을 확인하고 다시 눌러주세요.');
+    } finally {
+      s.pendingReport = false;
+      buttons.forEach(b => { b.disabled = false });
+      if (card.innerHTML !== cardBefore) {
+        card.querySelectorAll('[data-x="seen"], [data-x="none"]').forEach(b => {
+          if (spots[+b.dataset.i] === s) { b.disabled = false; if (b.dataset.x === 'seen') b.textContent = '🔥 봤어요' }
+        });
+      }
+    }
   };
   const _persist = window.persist;
   window.persist = function () { if (!L.on) return _persist() };
@@ -211,7 +265,7 @@
     } catch (e) {
       try { closeBub() } catch (x) { }
       fail(/duplicate_shop/.test(e.message || '') ? '같은 자리(13m 안)에 이미 등록된 붕어빵이 있어요' : /too_many/.test(e.message || '') ? '하루에 5곳까지만 등록할 수 있어요' : '새 가게가 서버에 저장되지 않았어요', e);
-      try { world.remove(s.g); (s.npc || []).forEach(n => world.remove(n)) } catch (x) { } const i = spots.indexOf(s); if (i >= 0) spots.splice(i, 1);
+      try { world.remove(s.g); (s.npc || []).forEach(n => world.remove(n)) } catch (x) { } const i = spots.indexOf(s); if (i >= 0) spots.splice(i, 1); refreshWorldUI();
     }
   }
 

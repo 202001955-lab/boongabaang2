@@ -1,0 +1,62 @@
+name: "문제가 있어요"
+description: "화면이나 기능이 예상과 다르게 동작할 때 알려주세요."
+title: "[문제] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        원인이나 해결 방법을 몰라도 괜찮아요. 한 번에 한 가지 문제를 적어 주세요.
+        캡처에는 이름·연락처·정확한 현재 위치·얼굴·로그인 정보가 보이지 않게 가려 주세요.
+  - type: textarea
+    id: problem
+    attributes:
+      label: "어떤 문제가 있었나요?"
+      placeholder: "예: 등록된 가게가 없는 동네에서 줄서기를 눌렀는데 아무 반응이 없었어요."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "어떻게 하면 같은 상황을 볼 수 있나요?"
+      description: "기억나는 만큼 적어 주세요. 다시 해도 생기는지 모르면 그렇게 적어도 됩니다."
+      placeholder: |
+        1. 입장하기를 누름
+        2. 동네를 선택함
+        3. 줄서기를 누름
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "원래는 어떻게 되었으면 했나요? (선택)"
+      placeholder: "예: 줄을 설 가게가 없다는 안내가 나왔으면 좋겠어요."
+  - type: dropdown
+    id: device
+    attributes:
+      label: "어떤 기기에서 봤나요? (선택)"
+      options:
+        - "잘 모르겠어요"
+        - "아이폰 / 아이패드"
+        - "안드로이드 휴대폰 / 태블릿"
+        - "컴퓨터"
+      default: 0
+  - type: input
+    id: browser
+    attributes:
+      label: "어디서 열었나요? (선택)"
+      placeholder: "예: 카카오톡 안에서, Safari, Chrome / 체험 모드였어요"
+  - type: textarea
+    id: reference
+    attributes:
+      label: "화면 캡처나 추가 설명 (선택)"
+      description: "이미지를 이 칸에 붙여넣거나 끌어 놓을 수 있어요. 공유 가능한 화면만 올려 주세요."
+  - type: dropdown
+    id: impact
+    attributes:
+      label: "이 문제 때문에 무엇을 못 하고 있나요? (선택)"
+      options:
+        - "잘 모르겠어요"
+        - "서비스를 전혀 사용할 수 없어요"
+        - "특정 기능을 사용할 수 없어요"
+        - "사용은 가능하지만 불편해요"
+      default: 0
