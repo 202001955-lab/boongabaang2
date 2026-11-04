@@ -5,11 +5,11 @@ import json, math, struct
 from pathlib import Path
 
 blob=bytearray(); views=[]; accessors=[]; meshes=[]; nodes=[]
-colors=['#FFF4E6','#FFFCF5','#D88983','#49382F','#F3C0B9','#BD9373','#DFB574']
+colors=['#E9A23E','#F3C478','#D9533B','#49382F','#F3C0B9','#BD9373','#DFB574']
 def rgba(h):
     v=[int(h[i:i+2],16)/255 for i in (1,3,5)]
     return [((c+.055)/1.055)**2.4 if c>.04045 else c/12.92 for c in v]+[1]
-materials=[{'name':n,'pbrMetallicRoughness':{'baseColorFactor':rgba(c),'metallicFactor':0,'roughnessFactor':.9}} for n,c in zip(['Mochi cream fur','Cream','Winter scarf','Cocoa eyes','Inner ears','Bag strap','Fish pastry'],colors)]
+materials=[{'name':n,'pbrMetallicRoughness':{'baseColorFactor':rgba(c),'metallicFactor':0,'roughnessFactor':.9}} for n,c in zip(['Warm ginger fur','Cream','Winter scarf','Cocoa eyes','Inner ears','Bag strap','Fish pastry'],colors)]
 def accessor(data,kind,count,component=5126):
     while len(blob)%4: blob.append(0)
     start=len(blob);blob.extend(data);views.append({'buffer':0,'byteOffset':start,'byteLength':len(data)})
@@ -41,46 +41,43 @@ def ball(name,p,s,mat,segments=24,rings=16,taper=0):
     mesh(name,v,n,ids,mat)
 
 def ear(side):
-    # Small rounded ears nestled into the head instead of sharp wedges.
-    ball('Soft ear',(side*.49,1.94,.015),(.17,.25,.15),0,taper=.8)
-    ball('Pink ear inset',(side*.49,1.99,.145),(.075,.12,.035),4,taper=.7)
+    # Slightly mismatched little ears keep the original handmade character.
+    ball('Soft ear',(side*.29,2.17 if side<0 else 2.14,.005),(.12,.21 if side<0 else .18,.115),0,taper=.85)
 
-ball('Mochi body',(0,.61,0),(.56,.48,.43),0)
-ball('Cream bib',(0,.61,.365),(.31,.29,.07),1)
+# A long, unadorned body and a smaller head echo the original code model.
+ball('Long dumpling body',(0,.87,0),(.4,.73,.33),0,20,16)
 for side in [-1,1]:
-    ball('Bean paw',(side*.28,.12,.15),(.235,.12,.26),0)
-    ball('Mitten',(side*.51,.59,.08),(.145,.19,.16),0)
+    ball('Tiny paw',(side*.21,.12,.09),(.14,.11,.17),0)
+    ball('Little arm',(side*.385,.86 if side<0 else .83,.015),(.085,.19,.105),0)
     ear(side)
-ball('Soft cheek head',(0,1.44,.025),(.77,.54,.52),0,32,24)
+ball('Soft cheek head',(.015,1.86,.025),(.49,.41,.4),0,24,18)
 for side in [-1,1]:
-    ball('Cream muzzle',(side*.085,1.31,.531),(.115,.07,.025),1)
-    ball('Cocoa eye',(side*.19,1.48,.535),(.035,.047,.018),3)
-    ball('Eye glint',(side*.19-.009,1.493,.55),(.009,.012,.006),1,12,8)
-    ball('Cheek',(side*.37,1.32,.483),(.105,.045,.021),4)
-ball('Button nose',(0,1.355,.56),(.027,.018,.014),3)
-# Tiny smiling mouth, kept below the nose for a quiet, friendly expression.
+    ball('Quiet dot eye',(side*.18,1.85 if side<0 else 1.86,.414),(.033,.028,.012),3,12,8)
+    ball('Cheek',(side*.29,1.71,.369),(.055,.022,.012),4,12,8)
+ball('Tiny nose',(.01,1.735,.427),(.024,.016,.012),3,12,8)
+# Uneven little cat mouth, with no white muzzle or shiny toy-like eyes.
 for side in [-1,1]:
-    for i in range(5):
-        t=i/4;ball('Little smile',(side*(.012+.032*t),1.318-.012*math.sin(t*math.pi),.559),(.009,.008,.007),3,8,6)
+    for i in range(8):
+        t=i/7;ball('Wonky cat smile',(.01+side*(.006+.065*t),1.704-.024*math.sin(t*math.pi),.427),(.011,.009,.007),3,8,6)
 for i in range(13):
-    t=i/12;ball('Curled tail',(.12+.31*math.sin(t*2.4),.32+.65*t,-.31-.32*math.sin(t*2)),(.115,.12,.115),0,12,8)
+    t=i/12;ball('Curled tail',(.12+.31*math.sin(t*2.4),.4+.72*t,-.31-.32*math.sin(t*2)),(.075,.085,.075),0,12,8)
 # One continuous padded ring keeps the scarf soft rather than bead-like.
 v=[];n=[];ids=[];segments=48;cross=12
 for i in range(segments+1):
     a=math.tau*i/segments
     for j in range(cross+1):
         b=math.tau*j/cross;ca=math.cos(a);sa=math.sin(a);cb=math.cos(b);sb=math.sin(b)
-        v.extend(((.42+.105*cb)*ca,.99+.095*sb,(.32+.105*cb)*sa))
+        v.extend(((.33+.065*cb)*ca,1.46+.065*sb,(.28+.065*cb)*sa))
         n.extend((cb*ca,sb,cb*sa))
 for i in range(segments):
     for j in range(cross):
         a=i*(cross+1)+j;b=a+cross+1;ids.extend((a,a+1,b,a+1,b+1,b))
 mesh('Soft continuous scarf',v,n,ids,2)
-ball('Scarf knot',(.32,.96,.32),(.12,.12,.1),2)
-ball('Scarf end',(.33,.79,.36),(.09,.18,.055),2)
+ball('Scarf knot',(.27,1.43,.25),(.085,.08,.07),2)
+ball('Scarf end',(.29,1.29,.3),(.06,.15,.04),2)
 # Cross-body strap and fish-shaped pastry satchel, visible from the rear camera.
 for i in range(12):
-    t=i/11;ball('Satchel strap',(-.37+.73*t,.92-.44*t,-.345),(.035,.065,.035),5,8,6)
+    t=i/11;ball('Satchel strap',(-.3+.6*t,1.28-.66*t,-.31),(.035,.065,.035),5,8,6)
 ball('Fish satchel',(.25,.49,-.43),(.26,.16,.085),6)
 ball('Fish tail',(.51,.49,-.43),(.1,.12,.065),6)
 ball('Fish eye',(.1,.53,-.515),(.025,.025,.012),3,8,6)
