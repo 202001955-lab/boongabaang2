@@ -8,6 +8,11 @@
 
 서버 설정이 없으면 월드는 "혼자 하기(데모)" 모드로 열립니다.
 
+## 요청과 피드백 남기기
+
+개발 지식 없이도 문제를 제보하고 개선을 요청할 수 있습니다.
+[협업 안내와 작성 예시](CONTRIBUTING.md)를 먼저 확인해 주세요.
+
 ## 실행 순서
 1. supabase.com 에서 프로젝트 만들기
 2. Authentication → Sign In / Providers → **Anonymous sign-ins 켜기**

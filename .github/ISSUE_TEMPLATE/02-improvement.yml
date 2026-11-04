@@ -1,0 +1,41 @@
+name: "이렇게 개선하면 좋겠어요"
+description: "새 기능, 화면, 문구에 대한 아이디어를 제안해 주세요."
+title: "[개선] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        기술적인 구현 방법 대신, 누가 어떤 상황에서 필요한지 알려 주세요.
+        한 번에 한 가지 제안을 적고 캡처의 개인정보는 가려 주세요.
+  - type: textarea
+    id: context
+    attributes:
+      label: "누가 어떤 상황에서 불편한가요?"
+      placeholder: "예: 처음 들어온 사람이 예시 가게를 실제 영업 중인 가게로 오해할 수 있어요."
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: "어떻게 달라지면 좋을까요?"
+      placeholder: "예: 체험하는 동안 화면 위에 ‘예시 가게’라고 계속 표시해 주세요."
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: "어떤 모습을 보면 완료되었다고 할 수 있을까요? (선택)"
+      description: "비워 두면 담당자가 확인 방법을 제안하고 함께 정합니다."
+      placeholder: |
+        - 체험 모드로 입장하면 ‘예시 가게’ 표시가 보인다.
+        - 휴대폰에서도 표시가 잘리지 않는다.
+  - type: textarea
+    id: references
+    attributes:
+      label: "참고 화면, 문구, 링크 (선택)"
+      placeholder: "마음에 드는 예시나 간단한 손그림도 좋아요."
+  - type: input
+    id: timing
+    attributes:
+      label: "필요한 시점과 이유 (선택)"
+      placeholder: "예: 사용자 체험 전에 필요해요 / 급하지 않아요"
