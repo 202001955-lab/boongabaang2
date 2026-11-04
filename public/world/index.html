@@ -88,6 +88,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .lg{flex-wrap:nowrap!important;gap:4px!important}.lg span{white-space:nowrap;flex:none;font-size:11px!important;padding:4px 8px!important}@media (max-width:370px){.lg{gap:3px!important}.lg span{font-size:10px!important;padding:3px 6px!important}}
 .ch{display:flex;justify-content:space-between;align-items:center;gap:8px}.cn{font-size:20px;letter-spacing:-.02em}.cx{width:34px;height:34px;padding:0!important;border-radius:50%!important}.c1{margin-top:8px;font-size:15.5px;font-weight:600}.mu{font-weight:400;opacity:.75}.c2{margin-top:3px;font-size:13px;color:rgba(255,255,255,.75)}.rows{margin-top:6px;border-top:1px solid rgba(255,255,255,.18)}.row{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.14);color:#fff;padding:13px 2px;font-size:15px;text-align:left}.rv{padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.14)}.rvh{display:flex;justify-content:space-between;align-items:center;font-size:15px}.lk2{background:none;border:0;color:#fff;text-decoration:underline;text-underline-offset:3px;font-size:13px;padding:4px 6px}.rv1{font-size:13px;color:rgba(255,255,255,.72);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fn{display:block;margin-top:8px;font-size:11.5px;opacity:.6}
 #qh{position:fixed;left:12px;right:12px;bottom:calc(98px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;z-index:6;display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px 12px 16px;border-radius:20px;background:rgba(30,26,22,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.24);color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.3);box-sizing:border-box}#qh span{font-size:14.5px;line-height:1.45;word-break:keep-all}#qh button{border:0;border-radius:14px;padding:11px 16px;font-weight:700;background:#fff;color:#1d1206;white-space:nowrap}
+[data-x="rstar"]{background:rgba(255,255,255,.14)!important;color:#fff!important}.bub .b[data-x="rstar"].p,[data-x="rstar"].p{background:#FFE3B0!important;color:#4A1C08!important}.hx{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.12);font-size:13.5px;line-height:1.55;word-break:keep-all}
 </style></head><body>
 <canvas id="c"></canvas><div id="tag">나 · 은은한 붕어</div>
 <div class="hud"><button class="glass" id="back" aria-label="위치 다시 설정" style="border:0">←</button><span class="glass" id="area"></span><button class="glass" id="helpb" aria-label="도움말" style="border:0">❓</button><button class="glass" id="mapb" aria-label="지도 열기" style="border:0">🗺️</button><button class="glass" id="musb" aria-label="배경음 켜기/끄기" style="border:0">🔊</button><button class="glass" id="nickb" aria-label="닉네임 바꾸기" style="border:0">🐱</button><span class="glass" id="cmp" style="margin-left:auto">🧭 <span id="arr">▲</span> <span id="dist"></span></span></div>
@@ -247,15 +248,17 @@ function stat(s){const now=Date.now(),ev=s.ev||[],last=Math.max(s.t,...ev.filter
  if(ln>last)return{...b,k:'absent',e:'🌙',c:0x6b7a94,old:0,sub:ago(ln)+' 제보'};if(m<30)return{...b,k:'hot',e:'🔥',c:0xC8412F,old:0};if(m<120)return{...b,k:'warm',e:'🔥',c:0xD9533B,old:0};if(m<1440)return{...b,k:'weak',e:'🔥',c:0xD9853B,old:0};if(m<10080)return{...b,k:'recent',e:'🐟',c:0xD98A2B,old:0};return{...b,k:'old',e:'🌫️',c:0x9aa0a6,old:1}}
 let favs=[];try{favs=JSON.parse(localStorage.getItem('bz_fav')||'[]')}catch(e){}// 서버 연결 후: 저장한 가게가 목격되면 알림
 function show(s){const f=stat(s),i=spots.indexOf(s);
+ let sh=0,sm=0;try{sm=localStorage.getItem('bz_sm');sh=+localStorage.getItem('bz_sc')||0;if(!sm)localStorage.setItem('bz_sc',sh+1)}catch(e){}
+ const hint=(!sm&&sh<3)?`<div class="hx">이 가게를 직접 보셨다면 <b>🔥 봤어요</b>를, 없었다면 <b>🌙 없어요</b>를 눌러주세요!</div>`:'';
  const line=f.k=='absent'?`🌙 지금은 없을 수도 있어요 <span class="mu">· ${f.sub}</span>`:`${f.e} ${ago(f.lastT)} 목격 <span class="mu">· ${f.conf}명 확인</span>`;
  const info=[(s.menu&&s.menu.length?s.menu.map(m=>(MI[m]||'🥞')+' '+m).join(' · '):''),s.p?esc(s.p):''].filter(Boolean).join(' · ');
  const loc=s.land||s.addr;
  bub(`<div class="ch"><b class="cn">🐟 ${esc(s.n)}</b><button class="b cx" data-x="close" aria-label="닫기">✕</button></div><div class="c1">${line}</div>${info?`<div class="c2">${info}</div>`:''}${loc?`<div class="c2">📍 ${esc(loc)}</div>`:''}
 ${s.photo&&/^(data:image\/|https:)/.test(s.photo)?`<img src="${esc(s.photo)}" alt="최근 사진" style="width:100%;max-height:150px;object-fit:cover;border-radius:12px;margin-top:8px">`:''}
-<div class="g"><button class="b p" data-x="seen" data-i="${i}">🔥 봤어요</button><button class="b" data-x="none" data-i="${i}">🌙 없어요</button></div><div id="m" role="status"></div>
+${hint}<div class="g"><button class="b p" data-x="seen" data-i="${i}">🔥 봤어요</button><button class="b" data-x="none" data-i="${i}">🌙 없어요</button></div><div id="m" role="status"></div>
 <div class="rows" id="rows"><button class="row" data-x="chat" data-i="${i}"><span>💬 줄 대화방${s.q?` · ${s.q}명`:''}</span><span>›</span></button></div><small class="fn">제보를 바탕으로 한 정보예요.</small>`)}
 // 봤어요/없어요 기록: 같은 세션은 한 가게에 30분 1회. 서버 연결 시 sightings 테이블 insert로 교체
-function mark(i,st,bar){const s=spots[i];if(s.last&&Date.now()-s.last<18e5){bar?say('같은 가게는 30분에 한 번만 남길 수 있어요'):$('m').textContent='같은 가게는 30분에 한 번만 남길 수 있어요.';return}
+function mark(i,st,bar){try{localStorage.setItem('bz_sm','1')}catch(e){}const s=spots[i];if(s.last&&Date.now()-s.last<18e5){bar?say('같은 가게는 30분에 한 번만 남길 수 있어요'):$('m').textContent='같은 가게는 30분에 한 번만 남길 수 있어요.';return}
  s.last=Date.now();(s.ev=s.ev||[]).push({t:s.last,st,sid:'me'});if(st=='seen'){s.t=s.last;s.w++}lab(s);persist();const msg=st=='seen'?'🔥 목격 완료! 고마워요':'🌙 알려줘서 고마워요';if(bar){closeBub();say(msg)}else{show(s);$('m').textContent=msg}}
 const seen=(i,bar)=>mark(i,'seen',bar);
 // 사진 업로드 모듈: 지금은 미리보기용 압축 dataURL. 나중에 supabase.storage.from('shop-photos').upload() 후 public URL 반환하도록 교체
@@ -312,7 +315,7 @@ $('mcard').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(
 // ---- 첫 입장 튜토리얼: 대상 요소를 스포트라이트로 비추며 한 단계씩 설명 ----
 const TUT=[['joy','🕹️ 걸어 다니기','왼쪽 동그라미를 밀면 걸을 수 있어요.'],['cmp','🧭 나침반','가장 가까운 붕어빵 가게가 어느 쪽, 몇 m인지 알려줘요.'],
 ['b1','👀 구경하기','가게 근처에서 누르면 리뷰와 최근 목격, 메뉴·가격 등을 확인할 수 있어요.\n멀리 있을 땐 가까운 가게까지 걸어가요.'],
-['b2','🔥 봤어요','가게 근처에서 누르면 "지금 팔고 있어요"라고 이웃에게 알려요.\n같은 가게는 30분에 한 번만 남길 수 있어요.'],
+['b2','🔥 봤어요','이 가게를 직접 보셨다면 "봤어요", 없었다면 가게 카드에서 "없어요"를 눌러주세요!\n같은 가게는 30분에 한 번만 남길 수 있어요.'],
 ['b3','🧍 줄서기','가게 줄에 서면 같은 줄의 이웃과 대화할 수 있어요.\n앱 안의 온라인 줄이라, 실제 대기 인원과는 달라요.'],
 ['b4','➕ 등록','새 붕어빵 가게를 발견했다면 지도에서 위치를 정해 등록해요.\n메뉴나 가격을 알고 있다면 이웃냥이들을 위해 기재해주세요.'],
 ['morb','⋯ 더보기','도움말, 지도, 배경음 제어, 닉네임 변경은 여기에 있어요. 이제 붕어를 찾으러 가볼까요? 🐟']];

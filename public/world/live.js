@@ -229,7 +229,7 @@
   function revForm(i, rating, body) {
     const s = spots[i], mine = getRev(s).find(v => v.mine || (uid && v.uid === uid)); rating = rating || (mine && mine.rating) || 5; body = body != null ? body : (mine && mine.body) || '';
     bub(`<div style="display:flex;justify-content:space-between"><b>😋 ${esc(s.n)} 리뷰</b><button class="b" data-x="close" aria-label="닫기">✕</button></div><small>맛있었다면 다른 고양이들이 참고할 수 있게 남겨주세요. 한 가게에 하나만 남길 수 있고, 다시 쓰면 바뀌어요.</small>
-      <div style="display:flex;gap:4px;margin-top:8px" role="radiogroup" aria-label="별점">${[1, 2, 3, 4, 5].map(n => `<button class="b${n <= rating ? ' p' : ''}" data-x="rstar" data-i="${i}" data-v="${n}" aria-label="${n}점" style="flex:1">${n}</button>`).join('')}</div>
+      <div style="display:flex;gap:4px;margin-top:8px" role="radiogroup" aria-label="별점">${[1, 2, 3, 4, 5].map(n => `<button class="b${n === rating ? ' p' : ''}" data-x="rstar" data-i="${i}" data-v="${n}" aria-label="${n}점" style="flex:1">${n}</button>`).join('')}</div>
       <input id="rvb" maxlength="80" placeholder="예: 슈크림이 꽉 차 있어요!" value="${esc(body)}" aria-label="리뷰 내용"><div id="m" role="status"></div>
       <button class="b p" style="width:100%;margin-top:8px" data-x="rsave" data-i="${i}" data-v="${rating}">리뷰 올리기</button>`);
   }
@@ -242,16 +242,25 @@
     } else { const a = getRev(s).filter(v => !v.mine); a.unshift({ rating, body, nick: nk, mine: true, t: Date.now() }); revMem[area + '|' + s.n] = a }
     show(s); say('😋 리뷰 고마워요! 다른 고양이들에게 도움이 돼요');
   }
-  function revAll(i) {
-    const s = spots[i];
-    bub(`<div style="display:flex;justify-content:space-between"><b>😋 ${esc(s.n)} 리뷰</b><button class="b" data-x="close" aria-label="닫기">✕</button></div><div class="box" style="max-height:260px;overflow:auto">${getRev(s).map(x => `<div style="margin-bottom:6px">${stars(x.rating)} <b>${esc(x.nick || '익명냥')}</b> ${esc(x.body || '')}</div>`).join('')}</div><button class="b" style="width:100%;margin-top:8px" data-x="rback" data-i="${i}">← 가게로 돌아가기</button>`);
+  const RPG = 5;
+  async function revAll(i, pg) {
+    const s = spots[i]; pg = pg || 0; let list, total;
+    if (L.on && s.id) {
+      const r = await sb.from('reviews').select('rating,body,nick,user_id,created_at', { count: 'exact' }).eq('shop_id', s.id).order('created_at', { ascending: false }).range(pg * RPG, pg * RPG + RPG - 1);
+      if (!r.error) { total = r.count || 0; list = (r.data || []).map(v => ({ rating: +v.rating, body: strs(v.body, 80), nick: strs(v.nick, 10) })) }
+    }
+    if (!list) { const a = getRev(s); total = a.length; list = a.slice(pg * RPG, pg * RPG + RPG) }
+    const pages = Math.max(1, Math.ceil(total / RPG));
+    const pn = pages > 1 ? `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px"><button class="b" data-x="revpg" data-i="${i}" data-v="${pg - 1}" ${pg <= 0 ? 'disabled style="opacity:.35"' : ''} aria-label="이전 페이지">‹</button><span style="font-size:13px">${pg + 1} / ${pages}</span><button class="b" data-x="revpg" data-i="${i}" data-v="${pg + 1}" ${pg >= pages - 1 ? 'disabled style="opacity:.35"' : ''} aria-label="다음 페이지">›</button></div>` : '';
+    bub(`<div style="display:flex;justify-content:space-between"><b>😋 ${esc(s.n)} 리뷰 ${total}개</b><button class="b" data-x="close" aria-label="닫기">✕</button></div><div class="box" style="max-height:260px;overflow:auto">${list.map(x => `<div style="margin-bottom:6px">${stars(x.rating)} <b>${esc(x.nick || '익명냥')}</b> ${esc(x.body || '')}</div>`).join('') || '아직 리뷰가 없어요'}</div>${pn}<button class="b" style="width:100%;margin-top:8px" data-x="rback" data-i="${i}">← 가게로 돌아가기</button>`);
   }
   $('bub').addEventListener('click', e => {
     const b = e.target.closest('[data-x]'); if (!b) return; const x = b.dataset.x, i = +b.dataset.i;
     if (x === 'rev') revForm(i);
     else if (x === 'rstar') revForm(i, +b.dataset.v, $('rvb') ? $('rvb').value : '');
     else if (x === 'rsave') revSave(i, +b.dataset.v);
-    else if (x === 'revall') revAll(i);
+    else if (x === 'revall') revAll(i, 0);
+    else if (x === 'revpg') { if (!b.disabled) revAll(i, +b.dataset.v) }
     else if (x === 'rback') show(spots[i]);
     else if (x === 'gonew') { const t = spots[i]; if (t) { leaveQ(1); closeBub(); P.x = t.x + 1.5; P.z = t.z + 3.4; autoT = null; say('🐟 새로 만든 붕어빵 앞이에요!') } }
     else if (x === 'realgo') { const s = spots[i]; if (s && s.lat != null) openReal(s) }
