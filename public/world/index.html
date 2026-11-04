@@ -86,6 +86,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .lk{background:none;border:0;color:rgba(255,255,255,.75);font-size:14px;text-decoration:underline;text-underline-offset:4px;padding:8px}
 .bub .tag{display:block;width:max-content;margin-bottom:10px}.bub .b{word-break:keep-all}
 .bub small,.bub p,.bub b{word-break:keep-all;text-wrap:balance}
+.lg{flex-wrap:nowrap!important;gap:4px!important}.lg span{white-space:nowrap;flex:none;font-size:11px!important;padding:4px 8px!important}@media (max-width:370px){.lg{gap:3px!important}.lg span{font-size:10px!important;padding:3px 6px!important}}
 </style></head><body>
 <canvas id="c"></canvas><div id="tag">나 · 은은한 붕어</div>
 <div class="hud"><button class="glass" id="back" aria-label="위치 다시 설정" style="border:0">←</button><span class="glass" id="area"></span><button class="glass" id="helpb" aria-label="도움말" style="border:0">❓</button><button class="glass" id="mapb" aria-label="지도 열기" style="border:0">🗺️</button><button class="glass" id="musb" aria-label="배경음 켜기/끄기" style="border:0">🔊</button><button class="glass" id="nickb" aria-label="닉네임 바꾸기" style="border:0">🐱</button><span class="glass" id="cmp" style="margin-left:auto">🧭 <span id="arr">▲</span> <span id="dist"></span></span></div>
@@ -307,7 +308,7 @@ $('mcard').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(
  if(b.dataset.g=='walk'){autoT={x:s.x+1.5,z:s.z+3.4};say(s.n+'(으)로 걸어가는 중…')}else{autoT=null;P.x=s.x+1.5;P.z=s.z+3.4;say(s.n+' 앞에 도착했어요 🐟')}});
 // ---- 첫 입장 튜토리얼: 대상 요소를 스포트라이트로 비추며 한 단계씩 설명 ----
 const TUT=[['joy','🕹️ 걸어 다니기','왼쪽 동그라미를 밀면 걸을 수 있어요.'],['cmp','🧭 나침반','가장 가까운 붕어빵 가게가 어느 쪽, 몇 m인지 알려줘요.'],
-['b1','👀 구경하기','가까운 가게로 걸어가고, 도착하면 메뉴·가격·최근 목격을 보여줘요.'],
+['b1','👀 구경하기','가게 근처에서 누르면 리뷰와 최근 목격, 메뉴·가격 등을 확인할 수 있어요.\n멀리 있을 땐 가까운 가게까지 걸어가요.'],
 ['b2','🔥 봤어요','가게 근처에서 누르면 "지금 팔고 있어요"라고 이웃에게 알려요.\n같은 가게는 30분에 한 번만 남길 수 있어요.'],
 ['b3','🧍 줄서기','가게 줄에 서면 같은 줄의 이웃과 대화할 수 있어요.\n앱 안의 온라인 줄이라, 실제 대기 인원과는 달라요.'],
 ['b4','➕ 등록','새 붕어빵 가게를 발견했다면 지도에서 위치를 정해 등록해요.\n메뉴나 가격을 알고 있다면 이웃냥이들을 위해 기재해주세요.'],
