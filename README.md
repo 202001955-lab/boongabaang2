@@ -13,6 +13,12 @@
 개발 지식 없이도 문제를 제보하고 개선을 요청할 수 있습니다.
 [협업 안내와 작성 예시](CONTRIBUTING.md)를 먼저 확인해 주세요.
 
+## AI와 개발하기
+
+새 AI는 [AGENTS.md](AGENTS.md)를 읽고 시작합니다. 브랜치·워크트리·커밋·푸시 규칙,
+프로젝트 스킬과 작업 인수인계는 [AI 협업 안내](docs/ai/README.md)에서 찾을 수 있습니다.
+코드나 운영 방식이 바뀌면 관련 지침과 작업 기록도 같은 PR에서 갱신합니다.
+
 ## 실행 순서
 1. supabase.com 에서 프로젝트 만들기
 2. Authentication → Sign In / Providers → **Anonymous sign-ins 켜기**
