@@ -18,3 +18,31 @@
 
 ## 개인정보
 진짜 GPS 좌표는 서버로 보내지 않아요. 공유되는 건 동네 이름과 월드 좌표뿐입니다.
+
+## 프론트엔드만 개발하기
+
+백엔드 설정 없이 `npm install` → `npm run dev`로 실행할 수 있습니다.
+`http://localhost:3000/world/index.html?mode=demo`는 서버 설정을 요청하지 않고
+체험 모드로 시작합니다. 예시 가게와 대화를 표시하며, 체험 제보는 이 기기에만 저장합니다.
+실제 서비스 데이터와 체험 데이터는 화면 안내로 구분합니다.
+
+- `public/world/ui.js`, `ui.css`: 연결 상태, 빈 동네, 재시도 안내
+- `npm test`: 실제 프론트 스크립트를 실행하는 회귀 테스트 (DOM·네트워크·3D 렌더링은 대체)
+- `npm run build`: Next.js 빌드 및 타입 검사
+
+실제 Supabase 저장·실시간 동기화와 WebGL 화면은 별도 브라우저 확인이 필요합니다.
+
+## E2E 테스트
+
+백엔드 권한 없이 실제 브라우저에서 주요 흐름을 검증할 수 있습니다.
+
+```sh
+npm ci
+npx playwright install chromium webkit
+npm run test:e2e
+```
+
+데스크톱 Chrome, 모바일 Chrome, 모바일 Safari(WebKit) 환경에서 실행합니다.
+서버 API·실시간 메시지·지도 데이터는 모의 처리하며 실제 외부 서비스에 데이터를 쓰지 않습니다.
+테스트가 3100 포트에서 프로덕션 서버를 자동으로 실행합니다.
+실행 옵션, 검증 범위와 한계는 [E2E 안내](tests/e2e/README.md)를 참고하세요.

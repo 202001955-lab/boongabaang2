@@ -89,9 +89,11 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .ch{display:flex;justify-content:space-between;align-items:center;gap:8px}.cn{font-size:20px;letter-spacing:-.02em}.cx{width:34px;height:34px;padding:0!important;border-radius:50%!important}.c1{margin-top:8px;font-size:15.5px;font-weight:600}.mu{font-weight:400;opacity:.75}.c2{margin-top:3px;font-size:13px;color:rgba(255,255,255,.75)}.rows{margin-top:6px;border-top:1px solid rgba(255,255,255,.18)}.row{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.14);color:#fff;padding:13px 2px;font-size:15px;text-align:left}.rv{padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.14)}.rvh{display:flex;justify-content:space-between;align-items:center;font-size:15px}.lk2{background:none;border:0;color:#fff;text-decoration:underline;text-underline-offset:3px;font-size:13px;padding:4px 6px}.rv1{font-size:13px;color:rgba(255,255,255,.72);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fn{display:block;margin-top:8px;font-size:11.5px;opacity:.6}
 #qh{position:fixed;left:12px;right:12px;bottom:calc(98px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;z-index:6;display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px 12px 16px;border-radius:20px;background:rgba(30,26,22,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.24);color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.3);box-sizing:border-box}#qh span{font-size:14.5px;line-height:1.45;word-break:keep-all}#qh button{border:0;border-radius:14px;padding:11px 16px;font-weight:700;background:#fff;color:#1d1206;white-space:nowrap}
 [data-x="rstar"]{background:rgba(255,255,255,.14)!important;color:#fff!important}.bub .b[data-x="rstar"].p,[data-x="rstar"].p{background:#FFE3B0!important;color:#4A1C08!important}.hx{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.12);font-size:13.5px;line-height:1.55;word-break:keep-all}
-</style></head><body>
+</style><link rel="stylesheet" href="/world/ui.css"></head><body>
 <canvas id="c"></canvas><div id="tag">나 · 은은한 붕어</div>
 <div class="hud"><button class="glass" id="back" aria-label="위치 다시 설정" style="border:0">←</button><span class="glass" id="area"></span><button class="glass" id="helpb" aria-label="도움말" style="border:0">❓</button><button class="glass" id="mapb" aria-label="지도 열기" style="border:0">🗺️</button><button class="glass" id="musb" aria-label="배경음 켜기/끄기" style="border:0">🔊</button><button class="glass" id="nickb" aria-label="닉네임 바꾸기" style="border:0">🐱</button><span class="glass" id="cmp" style="margin-left:auto">🧭 <span id="arr">▲</span> <span id="dist"></span></span></div>
+<div id="world-status" role="status"><span id="mode-label"></span></div>
+<div id="world-empty" hidden><b id="empty-title"></b><p id="empty-description"></p><button class="b p" id="empty-action">첫 가게 등록하기</button></div>
 <div id="hint" style="display:none"></div><div id="toast" role="status"></div>
 <div id="joy"><div id="knob"></div></div>
 <div id="bar"><button id="b1"><i>👀</i>구경하기</button><button id="b2"><i>🔥</i>봤어요</button><button id="b3"><i>🧍</i>줄서기</button><button id="b4"><i>➕</i>등록</button><button id="b5"><i>💬</i>대화</button></div>
@@ -108,7 +110,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 <div class="bub" id="bub" role="dialog"></div>
 <svg width="0" height="0" style="position:absolute"><defs><symbol id="ty" viewBox="0 0 130 84"><path d="M26 42C26 18 60 8 92 16c16 4 26 14 26 26s-10 22-26 26C60 76 26 66 26 42Z" fill="#F0A94E"/><path d="M28 42L6 20c-3 4-4 10 0 22-4 12-3 18 0 22Z" fill="#F0A94E"/><g fill="none" stroke="#C98A3D" stroke-width="3" stroke-linecap="round"><path d="M62 26q6 4 0 8t0 8 0 8"/><path d="M72 24q6 4 0 8t0 8 0 8"/><path d="M82 24q6 4 0 8t0 8 0 8"/><path d="M12 28l8 8M12 54l8-8"/></g><circle cx="104" cy="34" r="3" fill="#C98A3D"/></symbol><symbol id="tyb" viewBox="0 0 130 84"><use href="#ty"/><ellipse cx="106" cy="42" rx="14" ry="18" fill="#5A2410" stroke="#FFD58A" stroke-width="3.5"/></symbol></defs></svg>
 <div id="bgty"></div>
-<div class="scr" id="intro" style="display:flex"><div style="width:100%"><span class="pill">🐟 동네 붕어빵 실시간 발견</span><h1>붕어야,<br>어디니?</h1><p>지금 우리 동네에서 목격된<br>붕어빵을 찾아보세요.</p></div><div class="hero"><div class="blob"></div><svg class="h1t" viewBox="0 0 130 84" aria-hidden="true"><use href="#ty"/></svg><svg class="h2t" viewBox="0 0 130 84" aria-hidden="true"><use href="#tyb"/></svg></div><button class="btn" id="enter" style="width:100%;padding:18px;font-size:18px;border-radius:18px">입장하기</button></div>
+<div class="scr" id="intro" style="display:flex"><div style="width:100%"><span class="pill">🐟 동네 붕어빵 실시간 발견</span><h1>붕어야,<br>어디니?</h1><p>지금 우리 동네에서 목격된<br>붕어빵을 찾아보세요.</p><p id="connection-note" role="status">동네 연결을 확인하고 있어요.</p></div><div class="hero"><div class="blob"></div><svg class="h1t" viewBox="0 0 130 84" aria-hidden="true"><use href="#ty"/></svg><svg class="h2t" viewBox="0 0 130 84" aria-hidden="true"><use href="#tyb"/></svg></div><button class="btn" id="enter" style="width:100%;padding:18px;font-size:18px;border-radius:18px">입장하기</button></div>
 <div class="scr" id="welcome" style="justify-content:flex-end;padding:0"><div style="flex:1;display:grid;place-items:center"><canvas id="cp" width="200" height="200" aria-label="나의 고양이"></canvas></div><div id="dlg" role="button" tabindex="0" aria-label="다음"><span class="nt">사장냥</span><p id="dt" style="margin:0;opacity:1;max-width:none"></p><i>▼</i></div></div>
 <div class="scr" id="nick"><div style="font-size:48px">🐱</div><h2 style="margin:0">닉네임 설정</h2><p>붕어 줄에서 다른 고양이들에게 보여질 이름이에요.</p><input id="nk" maxlength="10" aria-label="닉네임" style="max-width:260px;text-align:center;font-size:18px;color:#3B2A1A"><button class="btn s" id="dice">🎲 랜덤 닉네임</button><p id="nm" role="alert"></p><button class="btn" id="nnext">다음</button></div>
 <div class="scr" id="ask"><div style="width:46px;height:62px;margin:0 auto 6px;background:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 46'%3E%3Cpath d='M17 45C17 45 3 28 3 16a14 14 0 0 1 28 0c0 12-14 29-14 29z' fill='%23E5342B'/%3E%3Ccircle cx='17' cy='16' r='5.5' fill='%23fff'/%3E%3C/svg%3E&quot;) center/contain no-repeat" aria-hidden="true"></div><h2 style="margin:0">내 주변 붕어빵을<br>찾아볼까요? 🐟</h2><p>허용해도 내 위치는 공개되지 않아요.</p><button class="btn" id="askgo" style="margin-top:10px;width:100%;max-width:300px;padding:18px;font-size:18px">📍 내 위치로 찾기</button><button id="askman" class="lk">위치 허용이 어렵다면 역 이름으로 찾기</button></div>
@@ -133,10 +135,21 @@ const geoFail=(e,toLoc)=>{if(toLoc)scr('loc');$('bub').style.zIndex=20;if(!(e&&e
 $('bub').addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;if(b.dataset.x=='geocopy'){const u=location.href,ok=()=>{b.textContent='복사됐어요!'},fb=()=>{const t=document.createElement('textarea');t.value=u;t.style.cssText='position:fixed;left:-999px';document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(x){b.textContent=u}t.remove()};try{navigator.clipboard.writeText(u).then(ok,fb)}catch(x){fb()}return}
 if(b.dataset.x=='geoman'){closeBub();scr('loc')}else if(b.dataset.x=='georetry'){closeBub();$('lm')&&($('lm').textContent='위치를 확인하는 중…');navigator.geolocation.getCurrentPosition(gpsOK,x=>geoFail(x,1),{timeout:15e3})}});
 $('gps').onclick=()=>{$('lm').textContent='위치를 확인하는 중…';navigator.geolocation?navigator.geolocation.getCurrentPosition(gpsOK,e=>geoFail(e),{timeout:15e3,maximumAge:6e4}):$('lm').textContent='이 브라우저는 위치를 지원하지 않아요. 아래에서 동네를 골라주세요.'};
-function pick(a,seed){area=a;const fg=!!gpsNext;LL=gpsNext||fakeLL(a);gpsNext=null;try{localStorage.setItem('bz_loc',a);fg?localStorage.setItem('bz_ll',JSON.stringify(LL)):localStorage.removeItem('bz_ll')}catch(e){}scr('scan');$('st').textContent='주변 붕세권 확인 중…';$('sm').textContent=a+' 주변 반경 약 100m를 둘러보고 있어요';$('go').style.display='none';
- if(!sc)init3d();build(hs(a));if(LIVE.on){spots.forEach(k=>{try{world.remove(k.g);(k.npc||[]).forEach(n=>world.remove(n))}catch(e){}});spots.length=0}(LIVE.on?[]:(userSpots[a]||[])).forEach(u=>{const k={...u,ev:u.ev||[],q:0,user:true};spots.push(k);stall(k)});recent=[a,...recent.filter(x=>x!==a)].slice(0,5);try{localStorage.setItem('bz_areas',JSON.stringify(recent))}catch(e){}renderRec();setTimeout(async()=>{if(LIVE.on)await LIVE.load(a);if(!spots.length){$('st').textContent='아직 등록된 붕어빵이 없어요';$('sm').textContent='첫 번째 발견자가 되어 보세요! 🐟';$('go').style.display='';return}const d=Math.min(...spots.map(s=>Math.hypot(s.x,s.z)))|0;$('st').textContent='붕어 '+spots.length+'곳 발견! 🎉';$('sm').textContent='가장 가까운 붕어는 약 '+d+'m 앞에 있어요.';$('go').style.display='';},1400)}
-$('go').onclick=()=>{scr(null);$('area').textContent=areaTxt();running=true;clock.getDelta();if(!tutDone&&!tutShown)setTimeout(()=>tut(0),400)};
-$('back').onclick=()=>{running=false;closeBub();endPlace();closeMap();scr('loc')};
+let scanVersion=0;
+function pick(a,seed){
+ const version=++scanVersion;running=false;near=null;area=a;
+ const fg=!!gpsNext;LL=gpsNext||fakeLL(a);gpsNext=null;
+ try{localStorage.setItem('bz_loc',a);fg?localStorage.setItem('bz_ll',JSON.stringify(LL)):localStorage.removeItem('bz_ll')}catch(e){}
+ scr('scan');$('st').textContent=LIVE.on?'동네의 제보를 불러오는 중…':'체험할 동네를 준비하는 중…';
+ $('sm').textContent=LIVE.on?'잠시만 기다려 주세요.':'예시 가게로 사용 방법을 익힐 수 있어요.';$('go').style.display='none';
+ if(!sc)init3d();build(hs(a));
+ if(LIVE.on){spots.forEach(k=>{world.remove(k.g);(k.npc||[]).forEach(n=>world.remove(n))});spots.length=0}
+ (LIVE.on?[]:(userSpots[a]||[])).forEach(u=>{const k={...u,ev:u.ev||[],q:0,user:true};spots.push(k);stall(k)});
+ recent=[a,...recent.filter(x=>x!==a)].slice(0,5);try{localStorage.setItem('bz_areas',JSON.stringify(recent))}catch(e){}renderRec();refreshWorldUI();
+ setTimeout(async()=>{if(version!==scanVersion)return;if(LIVE.on)await LIVE.load(a);if(version===scanVersion)finishScan()},400);
+}
+$('go').onclick=()=>{scr(null);running=true;refreshWorldUI();clock.getDelta();if(spots.length&&!tutDone&&!tutShown)setTimeout(()=>tut(0),400)};
+$('back').onclick=()=>{++scanVersion;running=false;near=null;if(LIVE.leave)LIVE.leave();closeBub();endPlace();closeMap();scr('loc');refreshWorldUI()};
 function init3d(){ren=new T.WebGLRenderer({canvas:$('c'),antialias:true});ren.setPixelRatio(Math.min(2,devicePixelRatio||1));sc=new T.Scene();sc.background=new T.Color(0x3B4E72);sc.fog=new T.Fog(0x3B4E72,35,150);
  cam=new T.PerspectiveCamera(60,1,.1,300);sc.add(new T.HemisphereLight(0xdfe9ff,0x7d8aa3,.95));const dl=new T.DirectionalLight(0xfff0d8,.6);dl.position.set(30,50,20);sc.add(dl);
  pl=person(myCat,0xD9533B,0);mkBub(pl,'');sc.add(pl);clock=new T.Clock();
@@ -226,9 +239,9 @@ function loop(){requestAnimationFrame(loop);if(!running||!world)return;const dt=
  if(ns){const dx=ns.x-P.x,dz=ns.z-P.z,f=-(Math.sin(yaw)*dx+Math.cos(yaw)*dz),rr=Math.cos(yaw)*dx-Math.sin(yaw)*dz;$('arr').style.transform=`rotate(${Math.atan2(rr,f)}rad)`;$('dist').textContent=Math.round(nd)+'m'}
  const p=snow.geometry.attributes.position;for(let i=0;i<500;i++){let y=p.getY(i)-dt*2;if(y<0){y=18;p.setX(i,P.x+(Math.random()-.5)*60);p.setZ(i,P.z+(Math.random()-.5)*60)}p.setY(i,y)}p.needsUpdate=true;ren.render(sc,cam)}
 const nearest=()=>spots.slice().sort((a,b)=>Math.hypot(a.x-P.x,a.z-P.z)-Math.hypot(b.x-P.x,b.z-P.z))[0];
-$('b1').onclick=()=>{if(near)return show(near);const s=nearest();autoT={x:s.x+1.5,z:s.z+3.4};say('가장 가까운 붕어로 걸어가는 중…')};
+$('b1').onclick=()=>{if(near)return show(near);const s=nearest();if(!s)return say('아직 가게가 없어요. 첫 가게를 등록해 보세요');autoT={x:s.x+1.5,z:s.z+3.4};say('가장 가까운 붕어로 걸어가는 중…')};
 $('b2').onclick=()=>near?seen(spots.indexOf(near),1):say('붕어 포장마차 가까이에서 눌러주세요');
-$('b3').onclick=()=>{const s=near||nearest(),e=slot(s,Math.min(s.q,8));autoT={x:e.x,z:e.z};say('줄 끝으로 걸어가는 중… 도착하면 자동으로 줄을 서요')};
+$('b3').onclick=()=>{const s=near||nearest();if(!s)return say('아직 줄을 설 가게가 없어요');const e=slot(s,Math.min(s.q,8));autoT={x:e.x,z:e.z};say('줄 끝으로 걸어가는 중… 도착하면 자동으로 줄을 서요')};
 // 새 가게 위치 정하기: 반투명 가게가 내 앞에 떠서 걸어 옮기거나, 지도에서 눌러 지정 → 확정 시 그 자리에 생성
 let placing=null,ghost=null,mext=40;
 function startPlace(){closeBub();placing={x:P.x-Math.sin(yaw)*4,z:P.z-Math.cos(yaw)*4,pinned:false};if(!ghost){ghost=new T.Group();const m=(g,c,x,y,z)=>{const o=new T.Mesh(g,new T.MeshBasicMaterial({color:c,transparent:true,opacity:.6,side:2}));o.position.set(x,y,z);ghost.add(o);return o};m(new T.BoxGeometry(2.6,1.1,1.3),0x8a5a34,0,.55,0);m(new T.BoxGeometry(3.2,.18,1.9),0xD9533B,0,2.4,0);m(new T.RingGeometry(2.2,2.6,24),0xFFD27A,0,.06,0).rotation.x=-Math.PI/2;sc.add(ghost)}ghost.visible=true;$('pbar').style.display='block';say('걸어서 위치를 맞춰보세요')}
@@ -247,7 +260,7 @@ const MI={팥:'🫘',슈크림:'💛',피자:'🍕',치즈:'🧀',고구마:'�
 function stat(s){const now=Date.now(),ev=s.ev||[],last=Math.max(s.t,...ev.filter(e=>e.st=='seen').map(e=>e.t)),ln=Math.max(0,...ev.filter(e=>e.st=='not_seen'&&now-e.t<36e5).map(e=>e.t)),conf=ev.filter(e=>e.st=='seen'&&now-e.t<108e5).length,m=(now-last)/6e4,b={lastT:last,conf};
  if(ln>last)return{...b,k:'absent',e:'🌙',c:0x6b7a94,old:0,sub:ago(ln)+' 제보'};if(m<30)return{...b,k:'hot',e:'🔥',c:0xC8412F,old:0};if(m<120)return{...b,k:'warm',e:'🔥',c:0xD9533B,old:0};if(m<1440)return{...b,k:'weak',e:'🔥',c:0xD9853B,old:0};if(m<10080)return{...b,k:'recent',e:'🐟',c:0xD98A2B,old:0};return{...b,k:'old',e:'🌫️',c:0x9aa0a6,old:1}}
 let favs=[];try{favs=JSON.parse(localStorage.getItem('bz_fav')||'[]')}catch(e){}// 서버 연결 후: 저장한 가게가 목격되면 알림
-function show(s){const f=stat(s),i=spots.indexOf(s);
+function show(s){if(!s)return;const f=stat(s),i=spots.indexOf(s);
  let sh=0,sm=0;try{sm=localStorage.getItem('bz_sm');sh=+localStorage.getItem('bz_sc')||0;if(!sm)localStorage.setItem('bz_sc',sh+1)}catch(e){}
  const hint=(!sm&&sh<3)?`<div class="hx">이 가게를 직접 보셨다면 <b>🔥 봤어요</b>를, 없었다면 <b>🌙 없어요</b>를 눌러주세요!</div>`:'';
  const line=f.k=='absent'?`🌙 지금은 없을 수도 있어요 <span class="mu">· ${f.sub}</span>`:`${f.e} ${ago(f.lastT)} 목격 <span class="mu">· ${f.conf}명 확인</span>`;
@@ -255,10 +268,10 @@ function show(s){const f=stat(s),i=spots.indexOf(s);
  const loc=s.land||s.addr;
  bub(`<div class="ch"><b class="cn">🐟 ${esc(s.n)}</b><button class="b cx" data-x="close" aria-label="닫기">✕</button></div><div class="c1">${line}</div>${info?`<div class="c2">${info}</div>`:''}${loc?`<div class="c2">📍 ${esc(loc)}</div>`:''}
 ${s.photo&&/^(data:image\/|https:)/.test(s.photo)?`<img src="${esc(s.photo)}" alt="최근 사진" style="width:100%;max-height:150px;object-fit:cover;border-radius:12px;margin-top:8px">`:''}
-${hint}<div class="g"><button class="b p" data-x="seen" data-i="${i}">🔥 봤어요</button><button class="b" data-x="none" data-i="${i}">🌙 없어요</button></div><div id="m" role="status"></div>
+${hint}<div class="g"><button class="b p" data-x="seen" data-i="${i}" ${s.pendingReport?'disabled':''}>${s.pendingReport?'저장 중…':'🔥 봤어요'}</button><button class="b" data-x="none" data-i="${i}" ${s.pendingReport?'disabled':''}>🌙 없어요</button></div><div id="m" role="status"></div>
 <div class="rows" id="rows"><button class="row" data-x="chat" data-i="${i}"><span>💬 줄 대화방${s.q?` · ${s.q}명`:''}</span><span>›</span></button></div><small class="fn">제보를 바탕으로 한 정보예요.</small>`)}
 // 봤어요/없어요 기록: 같은 세션은 한 가게에 30분 1회. 서버 연결 시 sightings 테이블 insert로 교체
-function mark(i,st,bar){try{localStorage.setItem('bz_sm','1')}catch(e){}const s=spots[i];if(s.last&&Date.now()-s.last<18e5){bar?say('같은 가게는 30분에 한 번만 남길 수 있어요'):$('m').textContent='같은 가게는 30분에 한 번만 남길 수 있어요.';return}
+function mark(i,st,bar){try{localStorage.setItem('bz_sm','1')}catch(e){}const s=spots[i];if(!s)return;if(s.last&&Date.now()-s.last<18e5){bar?say('같은 가게는 30분에 한 번만 남길 수 있어요'):$('m').textContent='같은 가게는 30분에 한 번만 남길 수 있어요.';return}
  s.last=Date.now();(s.ev=s.ev||[]).push({t:s.last,st,sid:'me'});if(st=='seen'){s.t=s.last;s.w++}lab(s);persist();const msg=st=='seen'?'🔥 목격 완료! 고마워요':'🌙 알려줘서 고마워요';if(bar){closeBub();say(msg)}else{show(s);$('m').textContent=msg}}
 const seen=(i,bar)=>mark(i,'seen',bar);
 // 사진 업로드 모듈: 지금은 미리보기용 압축 dataURL. 나중에 supabase.storage.from('shop-photos').upload() 후 public URL 반환하도록 교체
@@ -274,8 +287,8 @@ $('bub').addEventListener('change',async e=>{if(e.target.type=='file'&&e.target.
 function form(){reg.name=$('shopnm')?$('shopnm').value:reg.name;reg.price=$('pr')?$('pr').value:reg.price;reg.land=$('ld')?$('ld').value:reg.land;bub(`<b>어떤 붕어빵이 있었나요?</b><br><small>메뉴나 가격을 알고 있다면 근처 이웃냥이들을 위해 기재해주세요.</small><div class="chips" style="flex-wrap:wrap">${Object.keys(MI).map(m=>`<button class="${reg.menus.includes(m)?'on':''}" data-x="mn" data-v="${m}" aria-pressed="${reg.menus.includes(m)}" style="flex:0 0 30%">${MI[m]} ${m}</button>`).join('')}</div><input id="shopnm" maxlength="14" placeholder="가게 이름 (선택, 14자까지) 예: 역 앞 붕어빵" aria-label="가게 이름"><input id="pr" maxlength="20" placeholder="가격 (선택) 예: 3개 / 2,000원" aria-label="가격"><input id="ld" maxlength="40" placeholder="위치 설명 (예: 판교역 1번 출구 앞)" aria-label="위치 설명"><div class="g"><button class="b" data-x="close">취소</button><button class="b p" data-x="save">등록하기</button></div>`);$('shopnm').value=reg.name||'';$('pr').value=reg.price;$('ld').value=reg.land}
 let disc=+(localStorage.getItem('bz_disc')||0);
 function save(){if(!reg)return closeBub();reg.name=$('shopnm')?$('shopnm').value.trim().slice(0,14):reg.name;reg.price=$('pr')?$('pr').value.trim():reg.price;reg.land=$('ld')?$('ld').value.trim():reg.land;const now=Date.now(),s={n:reg.name||(reg.land?reg.land.slice(0,12):area+' 붕어빵'),x:reg.x,z:reg.z,t:now,w:1,menu:reg.menus,p:reg.price,q:0,ev:[{t:now,st:'seen',sid:'me'}],photo:reg.photo,addr:addrText(reg.x,reg.z),land:reg.land,ll:reg.ll};
- spots.push(s);stall(s);s.user=true;persist();disc++;try{localStorage.setItem('bz_disc',disc)}catch(e){}reg=null;$('area').textContent=areaTxt();
- bub(`<div style="text-align:center"><div style="font-size:44px">🐟🔥</div><h3 style="margin:4px 0">새 붕어빵 발견!</h3><p>이제 동네 사람들도 이 붕어빵을 찾을 수 있어요.</p><b style="color:var(--bun)">+1 발견 · 총 ${disc}곳</b><button class="b p" style="width:100%;margin-top:10px" data-x="close">월드로 돌아가기</button></div>`)}
+ spots.push(s);stall(s);s.user=true;persist();disc++;try{localStorage.setItem('bz_disc',disc)}catch(e){}reg=null;refreshWorldUI();
+ bub(`<div style="text-align:center"><div style="font-size:44px">🐟🔥</div><h3 style="margin:4px 0">새 붕어빵 발견!</h3><p>${LIVE.on?'이제 동네 사람들도 이 붕어빵을 찾을 수 있어요.':'체험 기록을 이 기기에 저장했어요. 다른 사람에게 공유되지 않아요.'}</p><b style="color:var(--bun)">+1 발견 · 총 ${disc}곳</b><button class="b p" style="width:100%;margin-top:10px" data-x="close">월드로 돌아가기</button></div>`)}
 // ---- 줄 선 사람들과 대화 (데모: 대화 상대는 가짜, 실제는 Supabase Realtime broadcast로 교체) ----
 const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),NAMES=['호떡냥','팥냥이','슈크림냥','붕어덕후','겨울냥','치즈냥','먹보냥','솜뭉치'],LINES=['지금 슈크림 나왔어요!','3개 2,000원이에요','줄 빨리 줄어요','팥이 더 맛있어요 🫘','방금 굽기 시작했대요','7시쯤 재료 떨어진대요'],KEEP=['어서오세요~ 금방 구워드려요 🐟','슈크림은 방금 나왔어요','오늘은 8시까지 해요'];
 let chatSpot=null;const pick1=a=>a[Math.floor(Math.random()*a.length)];
@@ -304,7 +317,7 @@ $('nickb').onclick=()=>bub(`<b>닉네임 바꾸기</b><input id="nk2" maxlength=
 // ---- 지도: 붕어빵 가게만 표시, 눌러서 걸어가기/바로 이동 (위쪽이 정면(-z) 방향) ----
 function openMap(){const ext=Math.max(40,...spots.flatMap(s=>[Math.abs(s.x),Math.abs(s.z)]),Math.abs(P.x),Math.abs(P.z))+15,pos=(x,z)=>`left:${(x/ext*.5+.5)*100}%;top:${(z/ext*.5+.5)*100}%`,rw=8/ext*50;mext=ext;
  $('mbox').innerHTML=`<div class="rd" style="left:0;right:0;top:${50-rw/2}%;height:${rw}%"></div><div class="rd" style="top:0;bottom:0;left:${50-rw/2}%;width:${rw}%"></div>`+spots.map((s,i)=>{const f=stat(s);return `<button class="mk" data-m="${i}" style="${pos(s.x,s.z)};${f.old?'opacity:.5':''}" aria-label="${esc(s.n)}">${f.e}</button>`}).join('')+`<div class="me" style="${pos(P.x,P.z)}">🐱</div>`+(placing?`<div class="me" style="${pos(placing.x,placing.z)}">📍</div>`:'');
- $('mcard').innerHTML=placing?'<small>새 가게를 놓을 곳을 지도에서 눌러주세요. 📍가 놓일 자리예요.</small>':'<small>붕어빵 가게를 눌러보세요. 🐱는 지금 내 위치예요.</small>';$('map').style.display='flex';if(!placing)showLg(false)}
+ $('mcard').innerHTML=placing?'<small>새 가게를 놓을 곳을 지도에서 눌러주세요. 📍가 놓일 자리예요.</small>':(!spots.length?'<small>아직 표시할 가게가 없어요. 등록 버튼으로 첫 가게를 알려주세요.</small>':'<small>붕어빵 가게를 눌러보세요. 🐱는 월드 속 내 고양이예요.</small>');$('map').style.display='flex';if(!placing)showLg(false)}
 const closeMap=()=>$('map').style.display='none';
 $('mapb').onclick=openMap;$('mclose').onclick=closeMap;
 $('mbox').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b){if(placing)pinMap(e);return}const i=+b.dataset.m,s=spots[i],f=stat(s);
@@ -413,6 +426,7 @@ $('lgi').onclick=()=>showLg(true);$('lgok').onclick=()=>{$('lgx').style.display=
  setInterval(()=>{const b=$('bub');t.style.display=(running&&near&&!modal&&(!b||b.style.display==='none')&&$('map').style.display!=='flex')?'block':'none'},400)})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" onerror="window.__sbfail=1"></script>
+<script src="/world/ui.js"></script>
 <script src="/world/live.js"></script>
 <script>
 (function(){

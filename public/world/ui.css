@@ -1,0 +1,18 @@
+/* Connection and empty states stay readable over the 3D scene. */
+#intro #connection-note { font-size: 13px; line-height: 1.5; margin-top: 14px; color: #ffe3b0; }
+#world-status { position: fixed; top: calc(62px + env(safe-area-inset-top, 0px)); left: 12px; right: 12px; display: none; justify-content: center; pointer-events: none; }
+#mode-label { padding: 6px 12px; border-radius: 99px; background: #211b17e6; color: #fff; font-size: 12px; border: 1px solid #ffffff40; }
+#world-empty { position: fixed; top: calc(110px + env(safe-area-inset-top, 0px)); left: 16px; right: 16px; max-width: 340px; margin: auto; padding: 20px; box-sizing: border-box; border-radius: 22px; background: #211b17ed; color: #fff; border: 1px solid #ffffff40; text-align: center; z-index: 4; }
+#world-empty[hidden] { display: none; }
+#world-empty b { font-size: 18px; }
+#world-empty p { font-size: 14px; line-height: 1.6; margin: 10px 0 16px; color: #e4d9ce; word-break: keep-all; }
+#world-empty button { width: 100%; }
+#bar button:disabled { opacity: .4; cursor: default; }
+.b:disabled { opacity: .55; cursor: wait; }
+#bar { max-width: calc(100vw - 24px); box-sizing: border-box; }
+#bar button { flex: 1; min-width: 0; }
+@media (max-width: 560px) {
+  .hud #area { flex: 1; width: auto; height: auto; padding: 9px 12px; display: block; font-size: 12px; }
+  .hud #area::before { content: none; }
+  #cmp { font-size: 12px; padding: 9px; white-space: nowrap; }
+}
