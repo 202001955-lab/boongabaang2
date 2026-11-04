@@ -26,7 +26,7 @@ async function startCatStudy() {
   const status = document.createElement('div'); status.id = 'study-status'; status.setAttribute('role','status'); document.body.appendChild(status);
   if (catStudyParams.get('preview') === 'cozy') {
     status.textContent = 'GLB 불러오는 중…';
-    try { await applyCozyCat(pl); status.textContent = 'GLB · 526 KB'; document.body.dataset.modelReady = 'cozy'; }
+    try { await applyCozyCat(pl); status.textContent = 'GLB · 508 KB'; document.body.dataset.modelReady = 'cozy'; }
     catch (error) { status.textContent = 'GLB 로드 실패 · 기존 모델 표시'; document.body.dataset.modelReady = 'error'; console.error(error); }
   } else { status.textContent = '기존 코드 모델'; document.body.dataset.modelReady = 'legacy'; }
   let angle = .3, rotate = !matchMedia('(prefers-reduced-motion: reduce)').matches, walking = false;
