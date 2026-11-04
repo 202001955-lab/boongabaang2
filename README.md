@@ -27,3 +27,4 @@
 - 재생성: `python3 scripts/build-cozy-cat.py` (Python 표준 라이브러리만 사용)
 - GLB에 관절별 노드와 Idle/Walk 클립을 포함합니다. 발 교차 보행·팔 스윙·고개·꼬리 움직임을 부드럽게 전환하며 눈 깜빡임과 접지 그림자를 적용합니다. 스킨 변형과 털색 커스터마이징은 포함하지 않습니다. 로드 실패 시 기존 캐릭터를 유지합니다.
 - 모델 검증: `python3 scripts/test-cozy-cat.py` — GLB 버퍼·메시 인덱스·법선, 애니메이션 루프와 얼굴 계층 구조를 검사합니다.
+- 실제 월드 보행 녹화: [MP4](docs/character-walk.mp4) · [GIF 미리보기](docs/character-walk.gif)
